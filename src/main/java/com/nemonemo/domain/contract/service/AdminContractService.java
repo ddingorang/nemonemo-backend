@@ -49,6 +49,10 @@ public class AdminContractService {
         Unit unit = unitRepository.findByIdAndIsActiveTrue(request.getUnitId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.UNIT_NOT_FOUND));
 
+        if (unit.getStatus() != UnitStatus.AVAILABLE) {
+            throw new BusinessException(ErrorCode.UNIT_NOT_AVAILABLE);
+        }
+
         if (contractRepository.existsByUnitIdAndStatus(unit.getId(), ContractStatus.ACTIVE)) {
             throw new BusinessException(ErrorCode.CONTRACT_ALREADY_ACTIVE);
         }
@@ -85,7 +89,19 @@ public class AdminContractService {
             throw new BusinessException(ErrorCode.CONTRACT_NOT_ACTIVE);
         }
 
-        contract.update(request.getCustomerName(), request.getCustomerPhone(), request.getCustomerEmail(),
+        Unit newUnit = unitRepository.findByIdAndIsActiveTrue(request.getUnitId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.UNIT_NOT_FOUND));
+
+        Unit oldUnit = contract.getUnit();
+        if (!oldUnit.getId().equals(newUnit.getId())) {
+            if (newUnit.getStatus() != UnitStatus.AVAILABLE) {
+                throw new BusinessException(ErrorCode.UNIT_NOT_AVAILABLE);
+            }
+            oldUnit.changeStatus(UnitStatus.AVAILABLE);
+            newUnit.changeStatus(UnitStatus.OCCUPIED);
+        }
+
+        contract.update(newUnit, request.getCustomerName(), request.getCustomerPhone(), request.getCustomerEmail(),
                 request.getStartDate(), request.getEndDate(), request.getMonthlyPrice());
 
         return ContractResponse.from(contract);

@@ -91,9 +91,10 @@ public class AdminUnitService {
     }
 
     @Transactional
-    public void deactivateUnit(Long id) {
+    public void deleteUnitContracts(Long id) {
         Unit unit = unitRepository.findByIdAndIsActiveTrue(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.UNIT_NOT_FOUND));
-        unit.deactivate();
+        contractRepository.deleteAllByUnitId(unit.getId());
+        unit.changeStatus(UnitStatus.AVAILABLE);
     }
 }

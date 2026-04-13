@@ -58,34 +58,34 @@ public class DataInitializer implements ApplicationRunner {
 
         java.util.ArrayList<Unit> units = new java.util.ArrayList<>();
 
-        // S 유닛 25개 (3㎡) — 구역 A, 1~3층
+        // S 유닛 25개 (3㎡) — 1~3층
         UnitStatus[] sSample = {UnitStatus.AVAILABLE, UnitStatus.AVAILABLE, UnitStatus.OCCUPIED, UnitStatus.AVAILABLE, UnitStatus.AVAILABLE};
         for (int i = 1; i <= 25; i++) {
-            units.add(buildUnit(warehouse, String.format("A-%02d", i), UnitSize.S, "A",
+            units.add(buildUnit(warehouse, String.format("S-%02d", i), UnitSize.S, "A",
                     (i <= 10 ? 1 : i <= 20 ? 2 : 3), new BigDecimal("3.00"), new BigDecimal("50000"),
                     sSample[(i - 1) % sSample.length]));
         }
 
-        // M 유닛 10개 (6㎡) — 구역 B, 1~2층
+        // M 유닛 10개 (6㎡) — 1~2층
         UnitStatus[] mSample = {UnitStatus.AVAILABLE, UnitStatus.OCCUPIED, UnitStatus.AVAILABLE, UnitStatus.RESERVED, UnitStatus.AVAILABLE};
         for (int i = 1; i <= 10; i++) {
-            units.add(buildUnit(warehouse, String.format("B-%02d", i), UnitSize.M, "B",
+            units.add(buildUnit(warehouse, String.format("M-%02d", i), UnitSize.M, "B",
                     (i <= 5 ? 1 : 2), new BigDecimal("6.00"), new BigDecimal("90000"),
                     mSample[(i - 1) % mSample.length]));
         }
 
-        // L 유닛 10개 (12㎡) — 구역 C, 1~2층
+        // L 유닛 10개 (12㎡) — 1~2층
         UnitStatus[] lSample = {UnitStatus.AVAILABLE, UnitStatus.OCCUPIED, UnitStatus.AVAILABLE, UnitStatus.AVAILABLE, UnitStatus.MAINTENANCE};
         for (int i = 1; i <= 10; i++) {
-            units.add(buildUnit(warehouse, String.format("C-%02d", i), UnitSize.L, "C",
+            units.add(buildUnit(warehouse, String.format("L-%02d", i), UnitSize.L, "C",
                     (i <= 5 ? 1 : 2), new BigDecimal("12.00"), new BigDecimal("160000"),
                     lSample[(i - 1) % lSample.length]));
         }
 
-        // XL 유닛 5개 (20㎡) — 구역 D, 1층
+        // XL 유닛 5개 (20㎡) — 1층
         UnitStatus[] xlSample = {UnitStatus.AVAILABLE, UnitStatus.OCCUPIED, UnitStatus.AVAILABLE, UnitStatus.AVAILABLE, UnitStatus.OCCUPIED};
         for (int i = 1; i <= 5; i++) {
-            units.add(buildUnit(warehouse, String.format("D-%02d", i), UnitSize.XL, "D",
+            units.add(buildUnit(warehouse, String.format("XL-%02d", i), UnitSize.XL, "D",
                     1, new BigDecimal("20.00"), new BigDecimal("250000"),
                     xlSample[i - 1]));
         }
@@ -97,17 +97,17 @@ public class DataInitializer implements ApplicationRunner {
                               LocalDate start, LocalDate end, BigDecimal price) {}
 
         List<SampleContract> samples = List.of(
-            new SampleContract("A-03", "김민준", "010-1234-5678", "minjun@email.com",  LocalDate.of(2026, 1, 1),  LocalDate.of(2026, 7, 31),  new BigDecimal("50000")),
-            new SampleContract("A-08", "이서연", "010-2345-6789", null,                LocalDate.of(2026, 2, 1),  LocalDate.of(2026, 8, 31),  new BigDecimal("50000")),
-            new SampleContract("A-13", "박지호", "010-3456-7890", "jiho@email.com",    LocalDate.of(2026, 3, 1),  LocalDate.of(2026, 4, 14),  new BigDecimal("50000")),
-            new SampleContract("A-18", "최유나", "010-4567-8901", null,                LocalDate.of(2025, 11, 1), LocalDate.of(2026, 10, 31), new BigDecimal("50000")),
-            new SampleContract("A-23", "정다은", "010-5678-9012", "daeun@email.com",   LocalDate.of(2026, 1, 15), LocalDate.of(2026, 12, 31), new BigDecimal("50000")),
-            new SampleContract("B-02", "한승우", "010-6789-0123", "seungwoo@email.com",LocalDate.of(2025, 12, 1), LocalDate.of(2026, 5, 31),  new BigDecimal("90000")),
-            new SampleContract("B-07", "오지수", "010-7890-1234", null,                LocalDate.of(2026, 2, 15), LocalDate.of(2026, 9, 14),  new BigDecimal("90000")),
-            new SampleContract("C-02", "윤태양", "010-8901-2345", "taeyang@email.com", LocalDate.of(2026, 1, 1),  LocalDate.of(2026, 6, 30),  new BigDecimal("160000")),
-            new SampleContract("C-07", "임나영", "010-9012-3456", null,                LocalDate.of(2025, 10, 1), LocalDate.of(2026, 4, 10),  new BigDecimal("160000")),
-            new SampleContract("D-02", "강현식", "010-0123-4567", "hyunsik@email.com", LocalDate.of(2025, 9, 1),  LocalDate.of(2026, 8, 31),  new BigDecimal("250000")),
-            new SampleContract("D-05", "신보라", "010-1357-2468", "bora@email.com",    LocalDate.of(2026, 3, 1),  LocalDate.of(2026, 12, 31), new BigDecimal("250000"))
+            new SampleContract("S-03", "김민준", "010-1234-5678", "minjun@email.com",  LocalDate.of(2026, 1, 1),  LocalDate.of(2026, 7, 31),  new BigDecimal("50000")),
+            new SampleContract("S-08", "이서연", "010-2345-6789", null,                LocalDate.of(2026, 2, 1),  LocalDate.of(2026, 8, 31),  new BigDecimal("50000")),
+            new SampleContract("S-13", "박지호", "010-3456-7890", "jiho@email.com",    LocalDate.of(2026, 3, 1),  LocalDate.of(2026, 4, 14),  new BigDecimal("50000")),
+            new SampleContract("S-18", "최유나", "010-4567-8901", null,                LocalDate.of(2025, 11, 1), LocalDate.of(2026, 10, 31), new BigDecimal("50000")),
+            new SampleContract("S-23", "정다은", "010-5678-9012", "daeun@email.com",   LocalDate.of(2026, 1, 15), LocalDate.of(2026, 12, 31), new BigDecimal("50000")),
+            new SampleContract("M-02", "한승우", "010-6789-0123", "seungwoo@email.com",LocalDate.of(2025, 12, 1), LocalDate.of(2026, 5, 31),  new BigDecimal("90000")),
+            new SampleContract("M-07", "오지수", "010-7890-1234", null,                LocalDate.of(2026, 2, 15), LocalDate.of(2026, 9, 14),  new BigDecimal("90000")),
+            new SampleContract("L-02", "윤태양", "010-8901-2345", "taeyang@email.com", LocalDate.of(2026, 1, 1),  LocalDate.of(2026, 6, 30),  new BigDecimal("160000")),
+            new SampleContract("L-07", "임나영", "010-9012-3456", null,                LocalDate.of(2025, 10, 1), LocalDate.of(2026, 4, 10),  new BigDecimal("160000")),
+            new SampleContract("XL-02", "강현식", "010-0123-4567", "hyunsik@email.com", LocalDate.of(2025, 9, 1),  LocalDate.of(2026, 8, 31),  new BigDecimal("250000")),
+            new SampleContract("XL-05", "신보라", "010-1357-2468", "bora@email.com",    LocalDate.of(2026, 3, 1),  LocalDate.of(2026, 12, 31), new BigDecimal("250000"))
         );
 
         java.util.Map<String, Unit> unitMap = saved.stream()

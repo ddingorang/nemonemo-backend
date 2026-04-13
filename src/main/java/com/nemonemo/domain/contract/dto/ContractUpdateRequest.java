@@ -11,6 +11,9 @@ import java.time.LocalDate;
 @Getter
 public class ContractUpdateRequest {
 
+    @NotNull
+    private Long unitId;
+
     @NotBlank
     private String customerName;
 

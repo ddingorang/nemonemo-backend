@@ -28,4 +28,6 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
 
     @Query("SELECT c FROM Contract c WHERE c.status = 'ACTIVE'")
     List<Contract> findAllActive();
+
+    void deleteAllByUnitId(Long unitId);
 }

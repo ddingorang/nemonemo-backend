@@ -53,8 +53,9 @@ public class Contract extends BaseTimeEntity {
     @Builder.Default
     private ContractStatus status = ContractStatus.ACTIVE;
 
-    public void update(String customerName, String customerPhone, String customerEmail,
+    public void update(Unit unit, String customerName, String customerPhone, String customerEmail,
                        LocalDate startDate, LocalDate endDate, BigDecimal monthlyPrice) {
+        this.unit = unit;
         this.customerName = customerName;
         this.customerPhone = customerPhone;
         this.customerEmail = customerEmail;

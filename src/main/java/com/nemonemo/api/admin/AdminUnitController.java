@@ -62,10 +62,10 @@ public class AdminUnitController {
         return ApiResponse.ok(adminUnitService.updateUnitStatus(id, request));
     }
 
-    @Operation(summary = "유닛 비활성화 (소프트 삭제)")
+    @Operation(summary = "유닛 계약 초기화 (연관 계약 전체 삭제)")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deactivateUnit(@PathVariable Long id) {
-        adminUnitService.deactivateUnit(id);
+    public void deleteUnitContracts(@PathVariable Long id) {
+        adminUnitService.deleteUnitContracts(id);
     }
 }
