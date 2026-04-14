@@ -23,7 +23,7 @@ public class ContractResponse {
     private String customerEmail;
     private LocalDate startDate;
     private LocalDate endDate;
-    private BigDecimal monthlyPrice;
+    private BigDecimal totalPrice;
     private ContractStatus status;
     private boolean expiringSoon;
     private LocalDateTime createdAt;
@@ -42,7 +42,7 @@ public class ContractResponse {
                 .customerEmail(contract.getCustomerEmail())
                 .startDate(contract.getStartDate())
                 .endDate(contract.getEndDate())
-                .monthlyPrice(contract.getMonthlyPrice())
+                .totalPrice(contract.getTotalPrice())
                 .status(contract.getStatus())
                 .expiringSoon(expiringSoon)
                 .createdAt(contract.getCreatedAt())

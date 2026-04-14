@@ -16,6 +16,8 @@ import com.nemonemo.domain.unit.entity.UnitStatus;
 import com.nemonemo.domain.unit.repository.UnitRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,9 +35,9 @@ public class AdminContractService {
     private final UnitRepository unitRepository;
     private final InquiryRepository inquiryRepository;
 
-    public List<ContractResponse> getContracts(ContractStatus status, Long unitId) {
-        return contractRepository.findAllByFilter(status, unitId)
-                .stream().map(ContractResponse::from).toList();
+    public Page<ContractResponse> getContracts(ContractStatus status, Long unitId, Pageable pageable) {
+        return contractRepository.findAllByFilter(status, unitId, pageable)
+                .map(ContractResponse::from);
     }
 
     public ContractResponse getContract(Long id) {
@@ -71,7 +73,7 @@ public class AdminContractService {
                 .customerEmail(request.getCustomerEmail())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
-                .monthlyPrice(request.getMonthlyPrice())
+                .totalPrice(request.getTotalPrice())
                 .build();
 
         contractRepository.save(contract);
@@ -102,7 +104,7 @@ public class AdminContractService {
         }
 
         contract.update(newUnit, request.getCustomerName(), request.getCustomerPhone(), request.getCustomerEmail(),
-                request.getStartDate(), request.getEndDate(), request.getMonthlyPrice());
+                request.getStartDate(), request.getEndDate(), request.getTotalPrice());
 
         return ContractResponse.from(contract);
     }

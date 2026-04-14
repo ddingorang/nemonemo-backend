@@ -45,8 +45,8 @@ public class Contract extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDate endDate;
 
-    @Column(nullable = false, precision = 10, scale = 0)
-    private BigDecimal monthlyPrice;
+    @Column(nullable = false, precision = 12, scale = 0)
+    private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -54,14 +54,14 @@ public class Contract extends BaseTimeEntity {
     private ContractStatus status = ContractStatus.ACTIVE;
 
     public void update(Unit unit, String customerName, String customerPhone, String customerEmail,
-                       LocalDate startDate, LocalDate endDate, BigDecimal monthlyPrice) {
+                       LocalDate startDate, LocalDate endDate, BigDecimal totalPrice) {
         this.unit = unit;
         this.customerName = customerName;
         this.customerPhone = customerPhone;
         this.customerEmail = customerEmail;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.monthlyPrice = monthlyPrice;
+        this.totalPrice = totalPrice;
     }
 
     public void terminate() {

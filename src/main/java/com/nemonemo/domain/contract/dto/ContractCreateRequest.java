@@ -31,5 +31,5 @@ public class ContractCreateRequest {
     private LocalDate endDate;
 
     @NotNull
-    private BigDecimal monthlyPrice;
+    private BigDecimal totalPrice;
 }

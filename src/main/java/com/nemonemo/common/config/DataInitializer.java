@@ -96,18 +96,19 @@ public class DataInitializer implements ApplicationRunner {
         record SampleContract(String unitNumber, String name, String phone, String email,
                               LocalDate start, LocalDate end, BigDecimal price) {}
 
+        // totalPrice = 월 임대료 × 계약 개월 수
         List<SampleContract> samples = List.of(
-            new SampleContract("S-03", "김민준", "010-1234-5678", "minjun@email.com",  LocalDate.of(2026, 1, 1),  LocalDate.of(2026, 7, 31),  new BigDecimal("50000")),
-            new SampleContract("S-08", "이서연", "010-2345-6789", null,                LocalDate.of(2026, 2, 1),  LocalDate.of(2026, 8, 31),  new BigDecimal("50000")),
-            new SampleContract("S-13", "박지호", "010-3456-7890", "jiho@email.com",    LocalDate.of(2026, 3, 1),  LocalDate.of(2026, 4, 14),  new BigDecimal("50000")),
-            new SampleContract("S-18", "최유나", "010-4567-8901", null,                LocalDate.of(2025, 11, 1), LocalDate.of(2026, 10, 31), new BigDecimal("50000")),
-            new SampleContract("S-23", "정다은", "010-5678-9012", "daeun@email.com",   LocalDate.of(2026, 1, 15), LocalDate.of(2026, 12, 31), new BigDecimal("50000")),
-            new SampleContract("M-02", "한승우", "010-6789-0123", "seungwoo@email.com",LocalDate.of(2025, 12, 1), LocalDate.of(2026, 5, 31),  new BigDecimal("90000")),
-            new SampleContract("M-07", "오지수", "010-7890-1234", null,                LocalDate.of(2026, 2, 15), LocalDate.of(2026, 9, 14),  new BigDecimal("90000")),
-            new SampleContract("L-02", "윤태양", "010-8901-2345", "taeyang@email.com", LocalDate.of(2026, 1, 1),  LocalDate.of(2026, 6, 30),  new BigDecimal("160000")),
-            new SampleContract("L-07", "임나영", "010-9012-3456", null,                LocalDate.of(2025, 10, 1), LocalDate.of(2026, 4, 10),  new BigDecimal("160000")),
-            new SampleContract("XL-02", "강현식", "010-0123-4567", "hyunsik@email.com", LocalDate.of(2025, 9, 1),  LocalDate.of(2026, 8, 31),  new BigDecimal("250000")),
-            new SampleContract("XL-05", "신보라", "010-1357-2468", "bora@email.com",    LocalDate.of(2026, 3, 1),  LocalDate.of(2026, 12, 31), new BigDecimal("250000"))
+            new SampleContract("S-03", "김민준", "010-1234-5678", "minjun@email.com",  LocalDate.of(2026, 1, 1),  LocalDate.of(2026, 7, 31),  new BigDecimal("350000")),  // 7개월 × 50,000
+            new SampleContract("S-08", "이서연", "010-2345-6789", null,                LocalDate.of(2026, 2, 1),  LocalDate.of(2026, 8, 31),  new BigDecimal("350000")),  // 7개월 × 50,000
+            new SampleContract("S-13", "박지호", "010-3456-7890", "jiho@email.com",    LocalDate.of(2026, 3, 1),  LocalDate.of(2026, 4, 14),  new BigDecimal("75000")),   // 1.5개월 × 50,000
+            new SampleContract("S-18", "최유나", "010-4567-8901", null,                LocalDate.of(2025, 11, 1), LocalDate.of(2026, 10, 31), new BigDecimal("600000")),  // 12개월 × 50,000
+            new SampleContract("S-23", "정다은", "010-5678-9012", "daeun@email.com",   LocalDate.of(2026, 1, 15), LocalDate.of(2026, 12, 31), new BigDecimal("575000")),  // 11.5개월 × 50,000
+            new SampleContract("M-02", "한승우", "010-6789-0123", "seungwoo@email.com",LocalDate.of(2025, 12, 1), LocalDate.of(2026, 5, 31),  new BigDecimal("540000")),  // 6개월 × 90,000
+            new SampleContract("M-07", "오지수", "010-7890-1234", null,                LocalDate.of(2026, 2, 15), LocalDate.of(2026, 9, 14),  new BigDecimal("630000")),  // 7개월 × 90,000
+            new SampleContract("L-02", "윤태양", "010-8901-2345", "taeyang@email.com", LocalDate.of(2026, 1, 1),  LocalDate.of(2026, 6, 30),  new BigDecimal("960000")),  // 6개월 × 160,000
+            new SampleContract("L-07", "임나영", "010-9012-3456", null,                LocalDate.of(2025, 10, 1), LocalDate.of(2026, 4, 10),  new BigDecimal("1040000")), // 6.5개월 × 160,000
+            new SampleContract("XL-02", "강현식", "010-0123-4567", "hyunsik@email.com", LocalDate.of(2025, 9, 1),  LocalDate.of(2026, 8, 31),  new BigDecimal("3000000")), // 12개월 × 250,000
+            new SampleContract("XL-05", "신보라", "010-1357-2468", "bora@email.com",    LocalDate.of(2026, 3, 1),  LocalDate.of(2026, 12, 31), new BigDecimal("2500000"))  // 10개월 × 250,000
         );
 
         java.util.Map<String, Unit> unitMap = saved.stream()
@@ -123,7 +124,7 @@ public class DataInitializer implements ApplicationRunner {
                     .customerEmail(s.email())
                     .startDate(s.start())
                     .endDate(s.end())
-                    .monthlyPrice(s.price())
+                    .totalPrice(s.price())
                     .status(ContractStatus.ACTIVE)
                     .build());
         }

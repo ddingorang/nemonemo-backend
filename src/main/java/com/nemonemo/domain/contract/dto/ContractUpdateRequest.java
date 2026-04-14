@@ -29,5 +29,5 @@ public class ContractUpdateRequest {
     private LocalDate endDate;
 
     @NotNull
-    private BigDecimal monthlyPrice;
+    private BigDecimal totalPrice;
 }

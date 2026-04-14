@@ -10,12 +10,15 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 public interface ContractRepository extends JpaRepository<Contract, Long> {
 
     boolean existsByUnitIdAndStatus(Long unitId, ContractStatus status);
 
-    @Query("SELECT c FROM Contract c WHERE (:status IS NULL OR c.status = :status) AND (:unitId IS NULL OR c.unit.id = :unitId) ORDER BY c.createdAt DESC")
-    List<Contract> findAllByFilter(@Param("status") ContractStatus status, @Param("unitId") Long unitId);
+    @Query("SELECT c FROM Contract c WHERE (:status IS NULL OR c.status = :status) AND (:unitId IS NULL OR c.unit.id = :unitId)")
+    Page<Contract> findAllByFilter(@Param("status") ContractStatus status, @Param("unitId") Long unitId, Pageable pageable);
 
     @Query("SELECT c FROM Contract c WHERE c.status = 'ACTIVE' AND c.endDate < :today")
     List<Contract> findAllExpired(@Param("today") LocalDate today);

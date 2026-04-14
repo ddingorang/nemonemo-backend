@@ -12,9 +12,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "[관리자] 계약 관리", description = "관리자 계약 관리 API")
 @SecurityRequirement(name = "Bearer Authentication")
@@ -27,11 +29,12 @@ public class AdminContractController {
 
     @Operation(summary = "계약 목록 조회")
     @GetMapping
-    public ApiResponse<List<ContractResponse>> getContracts(
+    public ApiResponse<Page<ContractResponse>> getContracts(
             @RequestParam(required = false) ContractStatus status,
-            @RequestParam(required = false) Long unitId
+            @RequestParam(required = false) Long unitId,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return ApiResponse.ok(adminContractService.getContracts(status, unitId));
+        return ApiResponse.ok(adminContractService.getContracts(status, unitId, pageable));
     }
 
     @Operation(summary = "계약 상세 조회")
