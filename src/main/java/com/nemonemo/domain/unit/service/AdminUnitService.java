@@ -61,8 +61,6 @@ public class AdminUnitService {
                 .warehouse(warehouse)
                 .unitNumber(request.getUnitNumber())
                 .size(request.getSize())
-                .areaSqm(request.getAreaSqm())
-                .floor(request.getFloor())
                 .zone(request.getZone())
                 .monthlyPrice(request.getMonthlyPrice())
                 .build();
@@ -75,8 +73,7 @@ public class AdminUnitService {
         Unit unit = unitRepository.findByIdAndIsActiveTrue(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.UNIT_NOT_FOUND));
 
-        unit.update(request.getUnitNumber(), request.getAreaSqm(),
-                request.getFloor(), request.getZone(), request.getMonthlyPrice());
+        unit.update(request.getUnitNumber(), request.getZone(), request.getMonthlyPrice());
 
         return UnitResponse.from(unit);
     }

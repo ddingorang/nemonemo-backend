@@ -21,7 +21,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 @Component
 @RequiredArgsConstructor
@@ -32,6 +37,14 @@ public class DataInitializer implements ApplicationRunner {
     private final AdminRepository adminRepository;
     private final ContractRepository contractRepository;
     private final PasswordEncoder passwordEncoder;
+
+    // 현재 날짜 기준 (2026-04-15)
+    private static final LocalDate TODAY = LocalDate.of(2026, 4, 15);
+
+    private static final String[] SURNAMES   = {"김", "이", "박", "최", "정", "강", "조", "윤", "장", "임", "한", "오", "서", "신", "권"};
+    private static final String[] GIVEN_NAMES = {"민준", "서연", "지호", "유나", "다은", "승우", "지수", "태양", "나영", "현식",
+                                                  "보라", "지원", "수빈", "예진", "민서", "준혁", "하은", "지민", "수현", "도현"};
+    private static final String[] DOMAINS    = {"gmail.com", "naver.com", "kakao.com", "daum.net"};
 
     @Override
     @Transactional
@@ -56,90 +69,106 @@ public class DataInitializer implements ApplicationRunner {
                         .build()
         );
 
-        java.util.ArrayList<Unit> units = new java.util.ArrayList<>();
+        List<Unit> units = new ArrayList<>();
 
-        // S 유닛 25개 (3㎡) — 1~3층
-        UnitStatus[] sSample = {UnitStatus.AVAILABLE, UnitStatus.AVAILABLE, UnitStatus.OCCUPIED, UnitStatus.AVAILABLE, UnitStatus.AVAILABLE};
-        for (int i = 1; i <= 25; i++) {
-            units.add(buildUnit(warehouse, String.format("S-%02d", i), UnitSize.S, "A",
-                    (i <= 10 ? 1 : i <= 20 ? 2 : 3), new BigDecimal("3.00"), new BigDecimal("50000"),
-                    sSample[(i - 1) % sSample.length]));
-        }
+        // XS 50개 (35 OCCUPIED / 15 AVAILABLE) — A존
+        addUnits(units, warehouse, "XS", UnitSize.XS, "A", new BigDecimal("30000"), 50, 35);
 
-        // M 유닛 10개 (6㎡) — 1~2층
-        UnitStatus[] mSample = {UnitStatus.AVAILABLE, UnitStatus.OCCUPIED, UnitStatus.AVAILABLE, UnitStatus.RESERVED, UnitStatus.AVAILABLE};
-        for (int i = 1; i <= 10; i++) {
-            units.add(buildUnit(warehouse, String.format("M-%02d", i), UnitSize.M, "B",
-                    (i <= 5 ? 1 : 2), new BigDecimal("6.00"), new BigDecimal("90000"),
-                    mSample[(i - 1) % mSample.length]));
-        }
+        // S 60개 (42 OCCUPIED / 18 AVAILABLE) — B존
+        addUnits(units, warehouse, "S",  UnitSize.S,  "B", new BigDecimal("50000"), 60, 42);
 
-        // L 유닛 10개 (12㎡) — 1~2층
-        UnitStatus[] lSample = {UnitStatus.AVAILABLE, UnitStatus.OCCUPIED, UnitStatus.AVAILABLE, UnitStatus.AVAILABLE, UnitStatus.MAINTENANCE};
-        for (int i = 1; i <= 10; i++) {
-            units.add(buildUnit(warehouse, String.format("L-%02d", i), UnitSize.L, "C",
-                    (i <= 5 ? 1 : 2), new BigDecimal("12.00"), new BigDecimal("160000"),
-                    lSample[(i - 1) % lSample.length]));
-        }
+        // M 26개 (18 OCCUPIED / 8 AVAILABLE) — C존
+        addUnits(units, warehouse, "M",  UnitSize.M,  "C", new BigDecimal("90000"), 26, 18);
 
-        // XL 유닛 5개 (20㎡) — 1층
-        UnitStatus[] xlSample = {UnitStatus.AVAILABLE, UnitStatus.OCCUPIED, UnitStatus.AVAILABLE, UnitStatus.AVAILABLE, UnitStatus.OCCUPIED};
-        for (int i = 1; i <= 5; i++) {
-            units.add(buildUnit(warehouse, String.format("XL-%02d", i), UnitSize.XL, "D",
-                    1, new BigDecimal("20.00"), new BigDecimal("250000"),
-                    xlSample[i - 1]));
-        }
+        // L 11개 (8 OCCUPIED / 3 AVAILABLE) — D존
+        addUnits(units, warehouse, "L",  UnitSize.L,  "D", new BigDecimal("160000"), 11, 8);
+
+        // XL 4개 (3 OCCUPIED / 1 AVAILABLE) — E존
+        addUnits(units, warehouse, "XL", UnitSize.XL, "E", new BigDecimal("250000"), 4, 3);
 
         List<Unit> saved = unitRepository.saveAll(units);
 
-        // 샘플 계약 데이터 (OCCUPIED 유닛에 매핑)
-        record SampleContract(String unitNumber, String name, String phone, String email,
-                              LocalDate start, LocalDate end, BigDecimal price) {}
+        // 사이즈별로 OCCUPIED 유닛을 분리한 뒤 round-robin 인터리빙
+        // → 계약 목록에서 XS끼리·S끼리 뭉치지 않도록
+        UnitSize[] sizeOrder = {UnitSize.XS, UnitSize.S, UnitSize.M, UnitSize.L, UnitSize.XL};
+        Map<UnitSize, List<Unit>> bySize = new EnumMap<>(UnitSize.class);
+        for (UnitSize sz : sizeOrder) bySize.put(sz, new ArrayList<>());
+        for (Unit u : saved) {
+            if (u.getStatus() == UnitStatus.OCCUPIED) bySize.get(u.getSize()).add(u);
+        }
 
-        // totalPrice = 월 임대료 × 계약 개월 수
-        List<SampleContract> samples = List.of(
-            new SampleContract("S-03", "김민준", "010-1234-5678", "minjun@email.com",  LocalDate.of(2026, 1, 1),  LocalDate.of(2026, 7, 31),  new BigDecimal("350000")),  // 7개월 × 50,000
-            new SampleContract("S-08", "이서연", "010-2345-6789", null,                LocalDate.of(2026, 2, 1),  LocalDate.of(2026, 8, 31),  new BigDecimal("350000")),  // 7개월 × 50,000
-            new SampleContract("S-13", "박지호", "010-3456-7890", "jiho@email.com",    LocalDate.of(2026, 3, 1),  LocalDate.of(2026, 4, 14),  new BigDecimal("75000")),   // 1.5개월 × 50,000
-            new SampleContract("S-18", "최유나", "010-4567-8901", null,                LocalDate.of(2025, 11, 1), LocalDate.of(2026, 10, 31), new BigDecimal("600000")),  // 12개월 × 50,000
-            new SampleContract("S-23", "정다은", "010-5678-9012", "daeun@email.com",   LocalDate.of(2026, 1, 15), LocalDate.of(2026, 12, 31), new BigDecimal("575000")),  // 11.5개월 × 50,000
-            new SampleContract("M-02", "한승우", "010-6789-0123", "seungwoo@email.com",LocalDate.of(2025, 12, 1), LocalDate.of(2026, 5, 31),  new BigDecimal("540000")),  // 6개월 × 90,000
-            new SampleContract("M-07", "오지수", "010-7890-1234", null,                LocalDate.of(2026, 2, 15), LocalDate.of(2026, 9, 14),  new BigDecimal("630000")),  // 7개월 × 90,000
-            new SampleContract("L-02", "윤태양", "010-8901-2345", "taeyang@email.com", LocalDate.of(2026, 1, 1),  LocalDate.of(2026, 6, 30),  new BigDecimal("960000")),  // 6개월 × 160,000
-            new SampleContract("L-07", "임나영", "010-9012-3456", null,                LocalDate.of(2025, 10, 1), LocalDate.of(2026, 4, 10),  new BigDecimal("1040000")), // 6.5개월 × 160,000
-            new SampleContract("XL-02", "강현식", "010-0123-4567", "hyunsik@email.com", LocalDate.of(2025, 9, 1),  LocalDate.of(2026, 8, 31),  new BigDecimal("3000000")), // 12개월 × 250,000
-            new SampleContract("XL-05", "신보라", "010-1357-2468", "bora@email.com",    LocalDate.of(2026, 3, 1),  LocalDate.of(2026, 12, 31), new BigDecimal("2500000"))  // 10개월 × 250,000
-        );
+        List<Unit> interleaved = new ArrayList<>();
+        int maxLen = bySize.values().stream().mapToInt(List::size).max().orElse(0);
+        for (int i = 0; i < maxLen; i++) {
+            for (UnitSize sz : sizeOrder) {
+                List<Unit> group = bySize.get(sz);
+                if (i < group.size()) interleaved.add(group.get(i));
+            }
+        }
 
-        java.util.Map<String, Unit> unitMap = saved.stream()
-                .collect(java.util.stream.Collectors.toMap(Unit::getUnitNumber, u -> u));
+        // 시작일 변화를 위한 일자(day) 팔레트 — 소수 스텝으로 고루 분산
+        int[] START_DAYS = {1, 3, 5, 7, 10, 12, 14, 15, 17, 19, 20, 22, 25, 27, 28};
 
-        for (SampleContract s : samples) {
-            Unit unit = unitMap.get(s.unitNumber());
-            if (unit == null) continue;
+        int idx = 0;
+        for (Unit unit : interleaved) {
+            String name  = SURNAMES[idx % SURNAMES.length] + GIVEN_NAMES[idx % GIVEN_NAMES.length];
+            String phone = String.format("010-%04d-%04d", 1000 + idx, 1000 + (idx * 7 + 3) % 9000);
+            String email = idx % 3 == 0 ? null
+                                        : "user" + (idx + 1) + "@" + DOMAINS[idx % DOMAINS.length];
+
+            // 시작 시점: 1~12개월 전, 소수 스텝(×5)으로 패턴 분산
+            int startMonthsAgo = 1 + (idx * 5) % 12;
+            // 시작 일자: START_DAYS 팔레트에서 소수 스텝(×11)으로 선택
+            int startDay = START_DAYS[(idx * 11) % START_DAYS.length];
+            // 계약 기간: 6~17개월, 소수 스텝(×7)으로 분산
+            int durationMonths = 6 + (idx * 7) % 12;
+
+            LocalDate base      = TODAY.minusMonths(startMonthsAgo);
+            int       clampedDay = Math.min(startDay, base.lengthOfMonth());
+            LocalDate startDate  = base.withDayOfMonth(clampedDay);
+            LocalDate endDate    = startDate.plusMonths(durationMonths).minusDays(1);
+            BigDecimal total     = unit.getMonthlyPrice().multiply(BigDecimal.valueOf(durationMonths));
+
             contractRepository.save(Contract.builder()
                     .unit(unit)
-                    .customerName(s.name())
-                    .customerPhone(s.phone())
-                    .customerEmail(s.email())
-                    .startDate(s.start())
-                    .endDate(s.end())
-                    .totalPrice(s.price())
+                    .customerName(name)
+                    .customerPhone(phone)
+                    .customerEmail(email)
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .totalPrice(total)
                     .status(ContractStatus.ACTIVE)
                     .build());
+
+            idx++;
+        }
+    }
+
+    /** 유닛을 count개 생성하고, occupiedCount개를 랜덤하게 분산하여 OCCUPIED로, 나머지를 AVAILABLE로 설정 */
+    private void addUnits(List<Unit> list, Warehouse warehouse,
+                          String prefix, UnitSize size, String zone,
+                          BigDecimal monthlyPrice, int count, int occupiedCount) {
+        // 재현 가능한 시드로 섞어서 빈 칸이 드문드문 생기도록 분산
+        List<Integer> indices = new ArrayList<>();
+        for (int i = 1; i <= count; i++) indices.add(i);
+        Collections.shuffle(indices, new Random(prefix.hashCode()));
+
+        java.util.Set<Integer> occupiedSet = new java.util.HashSet<>(indices.subList(0, occupiedCount));
+
+        for (int i = 1; i <= count; i++) {
+            UnitStatus status = occupiedSet.contains(i) ? UnitStatus.OCCUPIED : UnitStatus.AVAILABLE;
+            list.add(buildUnit(warehouse, String.format("%s-%02d", prefix, i),
+                    size, zone, monthlyPrice, status));
         }
     }
 
     private Unit buildUnit(Warehouse warehouse, String unitNumber, UnitSize size,
-                           String zone, int floor, BigDecimal areaSqm,
-                           BigDecimal monthlyPrice, UnitStatus status) {
+                           String zone, BigDecimal monthlyPrice, UnitStatus status) {
         return Unit.builder()
                 .warehouse(warehouse)
                 .unitNumber(unitNumber)
                 .size(size)
                 .zone(zone)
-                .floor(floor)
-                .areaSqm(areaSqm)
                 .monthlyPrice(monthlyPrice)
                 .status(status)
                 .build();

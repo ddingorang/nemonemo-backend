@@ -31,11 +31,6 @@ public class Unit extends BaseTimeEntity {
     @Column(nullable = false, length = 10)
     private UnitSize size;
 
-    @Column(nullable = false, precision = 6, scale = 2)
-    private BigDecimal areaSqm;
-
-    private Integer floor;
-
     @Column(length = 10)
     private String zone;
 
@@ -55,10 +50,8 @@ public class Unit extends BaseTimeEntity {
         this.status = status;
     }
 
-    public void update(String unitNumber, BigDecimal areaSqm, Integer floor, String zone, BigDecimal monthlyPrice) {
+    public void update(String unitNumber, String zone, BigDecimal monthlyPrice) {
         this.unitNumber = unitNumber;
-        this.areaSqm = areaSqm;
-        this.floor = floor;
         this.zone = zone;
         this.monthlyPrice = monthlyPrice;
     }

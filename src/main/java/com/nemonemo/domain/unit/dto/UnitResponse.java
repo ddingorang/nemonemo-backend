@@ -21,8 +21,6 @@ public class UnitResponse {
     private String warehouseName;
     private String unitNumber;
     private UnitSize size;
-    private BigDecimal areaSqm;
-    private Integer floor;
     private String zone;
     private BigDecimal monthlyPrice;
     private UnitStatus status;
@@ -51,8 +49,6 @@ public class UnitResponse {
                 .warehouseName(unit.getWarehouse().getName())
                 .unitNumber(unit.getUnitNumber())
                 .size(unit.getSize())
-                .areaSqm(unit.getAreaSqm())
-                .floor(unit.getFloor())
                 .zone(unit.getZone())
                 .monthlyPrice(unit.getMonthlyPrice())
                 .status(unit.getStatus())
