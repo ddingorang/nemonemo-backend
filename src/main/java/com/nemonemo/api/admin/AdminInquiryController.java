@@ -26,6 +26,7 @@ public class AdminInquiryController {
 
     private final AdminInquiryService adminInquiryService;
 
+    // 상태/사이즈 필터로 문의 목록 조회
     @Operation(summary = "문의 목록 조회")
     @GetMapping
     public ApiResponse<List<InquiryResponse>> getInquiries(
@@ -35,12 +36,14 @@ public class AdminInquiryController {
         return ApiResponse.ok(adminInquiryService.getInquiries(status, size));
     }
 
+    // 특정 문의 상세 조회
     @Operation(summary = "문의 상세 조회")
     @GetMapping("/{id}")
     public ApiResponse<InquiryResponse> getInquiry(@PathVariable Long id) {
         return ApiResponse.ok(adminInquiryService.getInquiry(id));
     }
 
+    // 문의 처리 상태 변경
     @Operation(summary = "문의 상태 변경")
     @PatchMapping("/{id}/status")
     public ApiResponse<InquiryResponse> updateStatus(
@@ -50,6 +53,7 @@ public class AdminInquiryController {
         return ApiResponse.ok(adminInquiryService.updateStatus(id, request));
     }
 
+    // 관리자 메모 수정
     @Operation(summary = "관리자 메모 수정")
     @PatchMapping("/{id}/memo")
     public ApiResponse<InquiryResponse> updateMemo(

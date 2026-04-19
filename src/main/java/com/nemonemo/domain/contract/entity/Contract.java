@@ -36,8 +36,8 @@ public class Contract extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private String customerPhone;
 
-    @Column(length = 100)
-    private String customerEmail;
+    @Column(length = 200)
+    private String customerAddress;
 
     @Column(nullable = false)
     private LocalDate startDate;
@@ -53,12 +53,12 @@ public class Contract extends BaseTimeEntity {
     @Builder.Default
     private ContractStatus status = ContractStatus.ACTIVE;
 
-    public void update(Unit unit, String customerName, String customerPhone, String customerEmail,
+    public void update(Unit unit, String customerName, String customerPhone, String customerAddress,
                        LocalDate startDate, LocalDate endDate, BigDecimal totalPrice) {
         this.unit = unit;
         this.customerName = customerName;
         this.customerPhone = customerPhone;
-        this.customerEmail = customerEmail;
+        this.customerAddress = customerAddress;
         this.startDate = startDate;
         this.endDate = endDate;
         this.totalPrice = totalPrice;

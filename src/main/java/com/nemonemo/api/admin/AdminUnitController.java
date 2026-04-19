@@ -28,6 +28,7 @@ public class AdminUnitController {
 
     private final AdminUnitService adminUnitService;
 
+    // 사이즈/상태 필터로 유닛 목록 조회
     @Operation(summary = "유닛 목록 조회")
     @GetMapping
     public ApiResponse<List<UnitResponse>> getUnits(
@@ -37,6 +38,7 @@ public class AdminUnitController {
         return ApiResponse.ok(adminUnitService.getUnits(size, status));
     }
 
+    // 새 유닛 등록
     @Operation(summary = "유닛 등록")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -44,6 +46,7 @@ public class AdminUnitController {
         return ApiResponse.ok(adminUnitService.createUnit(request));
     }
 
+    // 유닛 정보 수정
     @Operation(summary = "유닛 수정")
     @PutMapping("/{id}")
     public ApiResponse<UnitResponse> updateUnit(
@@ -53,6 +56,7 @@ public class AdminUnitController {
         return ApiResponse.ok(adminUnitService.updateUnit(id, request));
     }
 
+    // 유닛 상태 변경
     @Operation(summary = "유닛 상태 변경")
     @PatchMapping("/{id}/status")
     public ApiResponse<UnitResponse> updateUnitStatus(
@@ -62,6 +66,7 @@ public class AdminUnitController {
         return ApiResponse.ok(adminUnitService.updateUnitStatus(id, request));
     }
 
+    // 유닛 연관 계약 전체 삭제 및 상태 초기화
     @Operation(summary = "유닛 계약 초기화 (연관 계약 전체 삭제)")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

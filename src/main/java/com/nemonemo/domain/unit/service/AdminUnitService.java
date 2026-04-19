@@ -32,6 +32,7 @@ public class AdminUnitService {
     private final WarehouseRepository warehouseRepository;
     private final ContractRepository contractRepository;
 
+    // 활성 계약 정보 포함하여 사이즈/상태 필터로 유닛 목록 조회
     public List<UnitResponse> getUnits(UnitSize size, UnitStatus status) {
         Map<Long, Contract> activeContracts = contractRepository.findAllActive()
                 .stream().collect(Collectors.toMap(c -> c.getUnit().getId(), c -> c));
@@ -52,6 +53,7 @@ public class AdminUnitService {
                 .toList();
     }
 
+    // 창고에 새 유닛 등록
     @Transactional
     public UnitResponse createUnit(UnitCreateRequest request) {
         Warehouse warehouse = warehouseRepository.findById(request.getWarehouseId())
@@ -68,6 +70,7 @@ public class AdminUnitService {
         return UnitResponse.from(unitRepository.save(unit));
     }
 
+    // 유닛 번호, 구역, 월 가격 수정
     @Transactional
     public UnitResponse updateUnit(Long id, UnitUpdateRequest request) {
         Unit unit = unitRepository.findByIdAndIsActiveTrue(id)
@@ -78,6 +81,7 @@ public class AdminUnitService {
         return UnitResponse.from(unit);
     }
 
+    // 유닛 상태 변경
     @Transactional
     public UnitResponse updateUnitStatus(Long id, UnitStatusUpdateRequest request) {
         Unit unit = unitRepository.findByIdAndIsActiveTrue(id)
@@ -87,6 +91,7 @@ public class AdminUnitService {
         return UnitResponse.from(unit);
     }
 
+    // 유닛 연관 계약 전체 삭제 및 상태 초기화
     @Transactional
     public void deleteUnitContracts(Long id) {
         Unit unit = unitRepository.findByIdAndIsActiveTrue(id)

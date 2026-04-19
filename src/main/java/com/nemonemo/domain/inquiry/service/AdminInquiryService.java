@@ -23,17 +23,20 @@ public class AdminInquiryService {
 
     private final InquiryRepository inquiryRepository;
 
+    // 상태/사이즈 필터로 문의 목록 조회
     public List<InquiryResponse> getInquiries(InquiryStatus status, UnitSize size) {
         return inquiryRepository.findAllByFilter(status, size)
                 .stream().map(InquiryResponse::from).toList();
     }
 
+    // 특정 문의 상세 조회
     public InquiryResponse getInquiry(Long id) {
         return inquiryRepository.findById(id)
                 .map(InquiryResponse::from)
                 .orElseThrow(() -> new BusinessException(ErrorCode.INQUIRY_NOT_FOUND));
     }
 
+    // 문의 처리 상태 변경
     @Transactional
     public InquiryResponse updateStatus(Long id, InquiryStatusUpdateRequest request) {
         Inquiry inquiry = inquiryRepository.findById(id)
@@ -42,6 +45,7 @@ public class AdminInquiryService {
         return InquiryResponse.from(inquiry);
     }
 
+    // 관리자 메모 수정
     @Transactional
     public InquiryResponse updateMemo(Long id, InquiryMemoUpdateRequest request) {
         Inquiry inquiry = inquiryRepository.findById(id)

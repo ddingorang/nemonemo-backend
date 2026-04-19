@@ -27,6 +27,7 @@ public class AdminContractController {
 
     private final AdminContractService adminContractService;
 
+    // 상태/유닛 ID 필터로 계약 목록 페이지네이션 조회
     @Operation(summary = "계약 목록 조회")
     @GetMapping
     public ApiResponse<Page<ContractResponse>> getContracts(
@@ -37,18 +38,21 @@ public class AdminContractController {
         return ApiResponse.ok(adminContractService.getContracts(status, unitId, pageable));
     }
 
+    // 특정 계약 상세 조회
     @Operation(summary = "계약 상세 조회")
     @GetMapping("/{id}")
     public ApiResponse<ContractResponse> getContract(@PathVariable Long id) {
         return ApiResponse.ok(adminContractService.getContract(id));
     }
 
+    // 새 계약 등록
     @Operation(summary = "계약 등록")
     @PostMapping
     public ApiResponse<ContractResponse> createContract(@Valid @RequestBody ContractCreateRequest request) {
         return ApiResponse.ok(adminContractService.createContract(request));
     }
 
+    // 계약 정보 수정
     @Operation(summary = "계약 수정")
     @PutMapping("/{id}")
     public ApiResponse<ContractResponse> updateContract(
@@ -58,6 +62,7 @@ public class AdminContractController {
         return ApiResponse.ok(adminContractService.updateContract(id, request));
     }
 
+    // 계약 해지 처리
     @Operation(summary = "계약 해지")
     @PatchMapping("/{id}/terminate")
     public ApiResponse<ContractResponse> terminateContract(@PathVariable Long id) {

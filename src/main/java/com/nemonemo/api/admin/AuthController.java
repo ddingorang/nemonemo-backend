@@ -22,6 +22,7 @@ public class AuthController {
 
     private final AdminService adminService;
 
+    // 관리자 아이디/비밀번호 검증 후 JWT 토큰 발급
     @Operation(summary = "관리자 로그인", description = "아이디/비밀번호로 로그인하여 JWT 토큰을 발급받습니다.")
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {

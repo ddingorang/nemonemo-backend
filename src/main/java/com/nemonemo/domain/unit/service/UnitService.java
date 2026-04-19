@@ -26,6 +26,7 @@ public class UnitService {
     private final UnitRepository unitRepository;
     private final ContractRepository contractRepository;
 
+    // 만료 임박 표시 포함 사이즈/상태 필터로 유닛 목록 조회
     public List<UnitResponse> getUnits(UnitSize size, UnitStatus status) {
         Set<Long> expiringSoonUnitIds = getExpiringSoonUnitIds();
 
@@ -45,6 +46,7 @@ public class UnitService {
                 .toList();
     }
 
+    // 특정 유닛 상세 및 만료 임박 여부 조회
     public UnitResponse getUnit(Long id) {
         Unit unit = unitRepository.findByIdAndIsActiveTrue(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.UNIT_NOT_FOUND));
@@ -52,6 +54,7 @@ public class UnitService {
         return UnitResponse.from(unit, expiringSoonUnitIds.contains(unit.getId()));
     }
 
+    // 7일 내 계약 만료 유닛 ID 목록 조회
     private Set<Long> getExpiringSoonUnitIds() {
         LocalDate today = LocalDate.now();
         return contractRepository.findUnitIdsExpiringSoon(today, today.plusDays(7))

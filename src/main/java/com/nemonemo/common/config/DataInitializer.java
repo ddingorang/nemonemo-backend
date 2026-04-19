@@ -38,13 +38,34 @@ public class DataInitializer implements ApplicationRunner {
     private final ContractRepository contractRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // 현재 날짜 기준 (2026-04-15)
-    private static final LocalDate TODAY = LocalDate.of(2026, 4, 15);
+    private static final LocalDate TODAY = LocalDate.now();
 
     private static final String[] SURNAMES   = {"김", "이", "박", "최", "정", "강", "조", "윤", "장", "임", "한", "오", "서", "신", "권"};
     private static final String[] GIVEN_NAMES = {"민준", "서연", "지호", "유나", "다은", "승우", "지수", "태양", "나영", "현식",
                                                   "보라", "지원", "수빈", "예진", "민서", "준혁", "하은", "지민", "수현", "도현"};
-    private static final String[] DOMAINS    = {"gmail.com", "naver.com", "kakao.com", "daum.net"};
+
+    private static final String[][] ADDRESSES = {
+        {"경기도", "수원시", "팔달로",   "45"},
+        {"서울특별시", "마포구", "월드컵로", "12"},
+        {"부산광역시", "해운대구", "해운대해변로", "264"},
+        {"경기도", "성남시", "분당로", "88"},
+        {"서울특별시", "송파구", "올림픽로", "300"},
+        {"인천광역시", "남동구", "소래로", "77"},
+        {"대전광역시", "유성구", "대학로", "99"},
+        {"경기도", "고양시", "중앙로", "151"},
+        {"서울특별시", "강서구", "화곡로", "68"},
+        {"광주광역시", "북구", "북문대로", "55"},
+        {"경기도", "부천시", "경인로", "200"},
+        {"서울특별시", "노원구", "동일로", "174"},
+        {"대구광역시", "달서구", "달구벌대로", "1833"},
+        {"경기도", "용인시", "중부대로", "35"},
+        {"울산광역시", "남구", "삼산로", "123"},
+        {"서울특별시", "관악구", "봉천로", "59"},
+        {"경기도", "화성시", "봉담로", "22"},
+        {"충청남도", "천안시", "불당대로", "16"},
+        {"경기도", "파주시", "금촌로", "74"},
+        {"서울특별시", "은평구", "연서로", "40"},
+    };
 
     @Override
     @Transactional
@@ -106,42 +127,55 @@ public class DataInitializer implements ApplicationRunner {
             }
         }
 
-        // 시작일 변화를 위한 일자(day) 팔레트 — 소수 스텝으로 고루 분산
-        int[] START_DAYS = {1, 3, 5, 7, 10, 12, 14, 15, 17, 19, 20, 22, 25, 27, 28};
+        Random random = new Random(42);
 
-        int idx = 0;
+        int nameIdx = 0;
         for (Unit unit : interleaved) {
-            String name  = SURNAMES[idx % SURNAMES.length] + GIVEN_NAMES[idx % GIVEN_NAMES.length];
-            String phone = String.format("010-%04d-%04d", 1000 + idx, 1000 + (idx * 7 + 3) % 9000);
-            String email = idx % 3 == 0 ? null
-                                        : "user" + (idx + 1) + "@" + DOMAINS[idx % DOMAINS.length];
+            // 현재 활성 계약: 1~6개월 전 시작, 6~18개월 기간
+            int activeStartMonthsAgo = 1 + random.nextInt(6);
+            LocalDate activeStart = randomDate(random, TODAY.minusMonths(activeStartMonthsAgo));
+            int activeDuration = 6 + random.nextInt(13);
+            LocalDate activeEnd = activeStart.plusMonths(activeDuration).minusDays(1);
 
-            // 시작 시점: 1~12개월 전, 소수 스텝(×5)으로 패턴 분산
-            int startMonthsAgo = 1 + (idx * 5) % 12;
-            // 시작 일자: START_DAYS 팔레트에서 소수 스텝(×11)으로 선택
-            int startDay = START_DAYS[(idx * 11) % START_DAYS.length];
-            // 계약 기간: 6~17개월, 소수 스텝(×7)으로 분산
-            int durationMonths = 6 + (idx * 7) % 12;
+            contractRepository.save(buildContract(unit, nameIdx++, random, activeStart, activeEnd, ContractStatus.ACTIVE));
 
-            LocalDate base      = TODAY.minusMonths(startMonthsAgo);
-            int       clampedDay = Math.min(startDay, base.lengthOfMonth());
-            LocalDate startDate  = base.withDayOfMonth(clampedDay);
-            LocalDate endDate    = startDate.plusMonths(durationMonths).minusDays(1);
-            BigDecimal total     = unit.getMonthlyPrice().multiply(BigDecimal.valueOf(durationMonths));
+            // 과거 계약: 0~2개, 현재 계약 시작일 이전으로 역순 체인
+            int pastCount = random.nextInt(3);
+            LocalDate chainEnd = activeStart.minusDays(1 + random.nextInt(30));
+            for (int p = 0; p < pastCount; p++) {
+                int duration = 3 + random.nextInt(12);
+                LocalDate pastStart = chainEnd.minusMonths(duration).plusDays(1);
+                if (pastStart.isBefore(TODAY.minusMonths(36))) break;
 
-            contractRepository.save(Contract.builder()
-                    .unit(unit)
-                    .customerName(name)
-                    .customerPhone(phone)
-                    .customerEmail(email)
-                    .startDate(startDate)
-                    .endDate(endDate)
-                    .totalPrice(total)
-                    .status(ContractStatus.ACTIVE)
-                    .build());
-
-            idx++;
+                contractRepository.save(buildContract(unit, nameIdx++, random, pastStart, chainEnd, ContractStatus.EXPIRED));
+                chainEnd = pastStart.minusDays(1 + random.nextInt(30));
+            }
         }
+    }
+
+    private LocalDate randomDate(Random random, LocalDate base) {
+        int day = Math.min(1 + random.nextInt(28), base.lengthOfMonth());
+        return base.withDayOfMonth(day);
+    }
+
+    private Contract buildContract(Unit unit, int nameIdx, Random random, LocalDate startDate, LocalDate endDate, ContractStatus status) {
+        String name = SURNAMES[nameIdx % SURNAMES.length] + GIVEN_NAMES[nameIdx % GIVEN_NAMES.length];
+        String phone = String.format("010-%04d-%04d", 1000 + nameIdx, 1000 + (nameIdx * 7 + 3) % 9000);
+        String[] addrParts = ADDRESSES[(nameIdx * 3) % ADDRESSES.length];
+        String address = addrParts[0] + " " + addrParts[1] + " " + addrParts[2] + " " + addrParts[3];
+        long months = Math.max(1, java.time.temporal.ChronoUnit.MONTHS.between(startDate, endDate));
+        BigDecimal total = unit.getMonthlyPrice().multiply(BigDecimal.valueOf(months));
+
+        return Contract.builder()
+                .unit(unit)
+                .customerName(name)
+                .customerPhone(phone)
+                .customerAddress(address)
+                .startDate(startDate)
+                .endDate(endDate)
+                .totalPrice(total)
+                .status(status)
+                .build();
     }
 
     /** 유닛을 count개 생성하고, occupiedCount개를 랜덤하게 분산하여 OCCUPIED로, 나머지를 AVAILABLE로 설정 */

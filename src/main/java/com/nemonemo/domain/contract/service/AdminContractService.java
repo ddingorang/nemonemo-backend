@@ -35,17 +35,20 @@ public class AdminContractService {
     private final UnitRepository unitRepository;
     private final InquiryRepository inquiryRepository;
 
+    // 상태/유닛 ID 필터로 계약 목록 페이지네이션 조회
     public Page<ContractResponse> getContracts(ContractStatus status, Long unitId, Pageable pageable) {
         return contractRepository.findAllByFilter(status, unitId, pageable)
                 .map(ContractResponse::from);
     }
 
+    // 특정 계약 상세 조회
     public ContractResponse getContract(Long id) {
         return contractRepository.findById(id)
                 .map(ContractResponse::from)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CONTRACT_NOT_FOUND));
     }
 
+    // 유닛 가용 여부 확인 후 계약 생성 및 유닛 점유 처리
     @Transactional
     public ContractResponse createContract(ContractCreateRequest request) {
         Unit unit = unitRepository.findByIdAndIsActiveTrue(request.getUnitId())
@@ -70,7 +73,7 @@ public class AdminContractService {
                 .inquiry(inquiry)
                 .customerName(request.getCustomerName())
                 .customerPhone(request.getCustomerPhone())
-                .customerEmail(request.getCustomerEmail())
+                .customerAddress(request.getCustomerAddress())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .totalPrice(request.getTotalPrice())
@@ -82,6 +85,7 @@ public class AdminContractService {
         return ContractResponse.from(contract);
     }
 
+    // 계약 내용 및 유닛 변경 처리
     @Transactional
     public ContractResponse updateContract(Long id, ContractUpdateRequest request) {
         Contract contract = contractRepository.findById(id)
@@ -103,12 +107,13 @@ public class AdminContractService {
             newUnit.changeStatus(UnitStatus.OCCUPIED);
         }
 
-        contract.update(newUnit, request.getCustomerName(), request.getCustomerPhone(), request.getCustomerEmail(),
+        contract.update(newUnit, request.getCustomerName(), request.getCustomerPhone(), request.getCustomerAddress(),
                 request.getStartDate(), request.getEndDate(), request.getTotalPrice());
 
         return ContractResponse.from(contract);
     }
 
+    // 계약 해지 및 유닛 상태 복원
     @Transactional
     public ContractResponse terminateContract(Long id) {
         Contract contract = contractRepository.findById(id)
@@ -124,6 +129,7 @@ public class AdminContractService {
         return ContractResponse.from(contract);
     }
 
+    // 매일 새벽 1시 만료된 계약 일괄 처리 (스케줄러)
     @Scheduled(cron = "0 0 1 * * *")
     @Transactional
     public void processExpiredContracts() {

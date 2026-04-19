@@ -20,7 +20,7 @@ public class ContractResponse {
     private Long inquiryId;
     private String customerName;
     private String customerPhone;
-    private String customerEmail;
+    private String customerAddress;
     private LocalDate startDate;
     private LocalDate endDate;
     private BigDecimal totalPrice;
@@ -39,7 +39,7 @@ public class ContractResponse {
                 .inquiryId(contract.getInquiry() != null ? contract.getInquiry().getId() : null)
                 .customerName(contract.getCustomerName())
                 .customerPhone(contract.getCustomerPhone())
-                .customerEmail(contract.getCustomerEmail())
+                .customerAddress(contract.getCustomerAddress())
                 .startDate(contract.getStartDate())
                 .endDate(contract.getEndDate())
                 .totalPrice(contract.getTotalPrice())

@@ -21,6 +21,7 @@ public class AdminService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
+    // 아이디/비밀번호 검증 후 JWT 토큰 발급
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
         Admin admin = adminRepository.findByUsername(request.getUsername())

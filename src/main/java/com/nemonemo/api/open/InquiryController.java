@@ -20,6 +20,7 @@ public class InquiryController {
 
     private final InquiryService inquiryService;
 
+    // 특정 유닛 또는 희망 사이즈로 예약 문의 제출
     @Operation(summary = "예약 문의 제출", description = "특정 유닛 또는 희망 사이즈로 예약 문의를 제출합니다.")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -27,6 +28,7 @@ public class InquiryController {
         return ApiResponse.ok(inquiryService.submitInquiry(request));
     }
 
+    // 문의 ID와 연락처 일치 여부 확인 후 문의 상태 조회
     @Operation(summary = "문의 상태 조회", description = "문의 ID와 연락처로 본인의 문의 상태를 조회합니다.")
     @GetMapping("/{id}")
     public ApiResponse<InquiryResponse> getInquiry(

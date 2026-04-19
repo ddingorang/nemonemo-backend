@@ -21,6 +21,7 @@ public class UnitController {
 
     private final UnitService unitService;
 
+    // 사이즈/상태 필터로 유닛 목록 조회 (만료 임박 표시 포함)
     @Operation(summary = "유닛 목록 조회", description = "사이즈, 상태로 필터링하여 유닛 목록을 조회합니다.")
     @GetMapping
     public ApiResponse<List<UnitResponse>> getUnits(
@@ -30,6 +31,7 @@ public class UnitController {
         return ApiResponse.ok(unitService.getUnits(size, status));
     }
 
+    // 특정 유닛 상세 및 만료 임박 여부 조회
     @Operation(summary = "유닛 상세 조회", description = "특정 유닛의 상세 정보를 조회합니다.")
     @GetMapping("/{id}")
     public ApiResponse<UnitResponse> getUnit(@PathVariable Long id) {

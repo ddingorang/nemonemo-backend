@@ -23,6 +23,7 @@ public class InquiryService {
     private final InquiryRepository inquiryRepository;
     private final UnitRepository unitRepository;
 
+    // 중복 문의 방지 후 예약 문의 저장
     @Transactional
     public InquiryResponse submitInquiry(InquiryRequest request) {
         // 동일 연락처 중복 문의 방지
@@ -59,6 +60,7 @@ public class InquiryService {
         return InquiryResponse.from(inquiryRepository.save(inquiry));
     }
 
+    // 문의 ID와 연락처 일치 여부 확인 후 문의 상태 조회
     @Transactional(readOnly = true)
     public InquiryResponse getInquiry(Long id, String customerPhone) {
         Inquiry inquiry = inquiryRepository.findById(id)

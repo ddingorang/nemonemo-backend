@@ -24,6 +24,7 @@ public class DashboardService {
     private final ContractRepository contractRepository;
     private final InquiryRepository inquiryRepository;
 
+    // 유닛 현황, 이달 만료 계약, 미처리 문의 수 집계
     public DashboardResponse getDashboard() {
         DashboardResponse.UnitSummary unitSummary = DashboardResponse.UnitSummary.builder()
                 .total(unitRepository.countByIsActiveTrue())
