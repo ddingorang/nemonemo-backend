@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+
 @Getter
 @Builder
 public class UnitResponse {
@@ -26,10 +27,8 @@ public class UnitResponse {
     private UnitStatus status;
     private boolean expiringSoon;
 
-    // 활성 계약 정보 (없으면 null)
+    // 활성 계약 점유 정보 (없으면 null)
     private Long contractId;
-    private String contractCustomerName;
-    private String contractCustomerPhone;
     private LocalDateTime contractCreatedAt;
     private LocalDate contractStartDate;
     private LocalDate contractEndDate;
@@ -56,8 +55,6 @@ public class UnitResponse {
 
         if (contract != null) {
             b.contractId(contract.getId())
-             .contractCustomerName(contract.getCustomerName())
-             .contractCustomerPhone(contract.getCustomerPhone())
              .contractCreatedAt(contract.getCreatedAt())
              .contractStartDate(contract.getStartDate())
              .contractEndDate(contract.getEndDate());

@@ -29,8 +29,10 @@ public class ContractResponse {
     private LocalDateTime createdAt;
 
     public static ContractResponse from(Contract contract) {
+        LocalDate today = LocalDate.now();
         boolean expiringSoon = contract.getStatus() == ContractStatus.ACTIVE
-                && contract.getEndDate().minusDays(30).isBefore(LocalDate.now().plusDays(1));
+                && !contract.getEndDate().isBefore(today)
+                && contract.getEndDate().isBefore(today.plusDays(31));
 
         return ContractResponse.builder()
                 .id(contract.getId())
