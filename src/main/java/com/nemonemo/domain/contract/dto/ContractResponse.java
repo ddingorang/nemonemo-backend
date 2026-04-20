@@ -32,7 +32,7 @@ public class ContractResponse {
         LocalDate today = LocalDate.now();
         boolean expiringSoon = contract.getStatus() == ContractStatus.ACTIVE
                 && !contract.getEndDate().isBefore(today)
-                && contract.getEndDate().isBefore(today.plusDays(31));
+                && contract.getEndDate().isBefore(today.plusDays(14));
 
         return ContractResponse.builder()
                 .id(contract.getId())

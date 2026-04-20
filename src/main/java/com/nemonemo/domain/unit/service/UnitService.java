@@ -54,10 +54,10 @@ public class UnitService {
         return UnitResponse.from(unit, expiringSoonUnitIds.contains(unit.getId()));
     }
 
-    // 7일 내 계약 만료 유닛 ID 목록 조회
+    // 14일 내 계약 만료 유닛 ID 목록 조회
     private Set<Long> getExpiringSoonUnitIds() {
         LocalDate today = LocalDate.now();
-        return contractRepository.findUnitIdsExpiringSoon(today, today.plusDays(7))
+        return contractRepository.findUnitIdsExpiringSoon(today, today.plusDays(14))
                 .stream().collect(Collectors.toSet());
     }
 }
