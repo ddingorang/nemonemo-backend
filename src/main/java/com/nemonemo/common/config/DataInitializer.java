@@ -137,7 +137,10 @@ public class DataInitializer implements ApplicationRunner {
             int activeDuration = 6 + random.nextInt(13);
             LocalDate activeEnd = activeStart.plusMonths(activeDuration).minusDays(1);
 
-            contractRepository.save(buildContract(unit, nameIdx++, random, activeStart, activeEnd, ContractStatus.ACTIVE));
+            boolean alreadyExpired = activeEnd.isBefore(TODAY);
+            ContractStatus activeStatus = alreadyExpired ? ContractStatus.EXPIRED : ContractStatus.ACTIVE;
+            if (alreadyExpired) unit.changeStatus(UnitStatus.AVAILABLE);
+            contractRepository.save(buildContract(unit, nameIdx++, random, activeStart, activeEnd, activeStatus));
 
             // 과거 계약: 0~2개, 현재 계약 시작일 이전으로 역순 체인
             int pastCount = random.nextInt(3);
