@@ -6,6 +6,9 @@ import com.nemonemo.domain.admin.repository.AdminRepository;
 import com.nemonemo.domain.contract.entity.Contract;
 import com.nemonemo.domain.contract.entity.ContractStatus;
 import com.nemonemo.domain.contract.repository.ContractRepository;
+import com.nemonemo.domain.inquiry.entity.Inquiry;
+import com.nemonemo.domain.inquiry.entity.InquiryStatus;
+import com.nemonemo.domain.inquiry.repository.InquiryRepository;
 import com.nemonemo.domain.unit.entity.Unit;
 import com.nemonemo.domain.unit.entity.UnitSize;
 import com.nemonemo.domain.unit.entity.UnitStatus;
@@ -36,6 +39,7 @@ public class DataInitializer implements ApplicationRunner {
     private final UnitRepository unitRepository;
     private final AdminRepository adminRepository;
     private final ContractRepository contractRepository;
+    private final InquiryRepository inquiryRepository;
     private final PasswordEncoder passwordEncoder;
 
     private static final LocalDate TODAY = LocalDate.now();
@@ -154,6 +158,56 @@ public class DataInitializer implements ApplicationRunner {
                 chainEnd = pastStart.minusDays(1 + random.nextInt(30));
             }
         }
+
+        inquiryRepository.saveAll(List.of(
+                Inquiry.builder()
+                        .desiredSize(UnitSize.S)
+                        .customerName("이서연")
+                        .customerPhone("010-2345-6789")
+                        .customerEmail("seoyeon@example.com")
+                        .desiredStartDate(TODAY.plusDays(7))
+                        .desiredDurationMonths(3)
+                        .message("소형 창고 문의드립니다. 이삿짐 일부를 3개월 정도 보관하고 싶어요.")
+                        .status(InquiryStatus.PENDING)
+                        .build(),
+                Inquiry.builder()
+                        .desiredSize(UnitSize.M)
+                        .customerName("박지호")
+                        .customerPhone("010-3456-7890")
+                        .desiredStartDate(TODAY.plusDays(14))
+                        .desiredDurationMonths(6)
+                        .message("중형 사이즈 가능한지 확인 부탁드립니다.")
+                        .status(InquiryStatus.PENDING)
+                        .build(),
+                Inquiry.builder()
+                        .desiredSize(UnitSize.XS)
+                        .customerName("최유나")
+                        .customerPhone("010-4567-8901")
+                        .customerEmail("yuna.choi@example.com")
+                        .desiredStartDate(TODAY.plusDays(3))
+                        .desiredDurationMonths(1)
+                        .status(InquiryStatus.IN_PROGRESS)
+                        .build(),
+                Inquiry.builder()
+                        .desiredSize(UnitSize.L)
+                        .customerName("정승우")
+                        .customerPhone("010-5678-9012")
+                        .desiredStartDate(TODAY.plusMonths(1))
+                        .desiredDurationMonths(12)
+                        .message("대형 창고 장기 계약 원합니다. 가격 협의 가능한가요?")
+                        .status(InquiryStatus.PENDING)
+                        .build(),
+                Inquiry.builder()
+                        .desiredSize(UnitSize.S)
+                        .customerName("강다은")
+                        .customerPhone("010-6789-0123")
+                        .customerEmail("daeun.kang@example.com")
+                        .desiredStartDate(TODAY.minusDays(5))
+                        .desiredDurationMonths(2)
+                        .message("소형 창고 2개월 이용 희망합니다.")
+                        .status(InquiryStatus.COMPLETED)
+                        .build()
+        ));
     }
 
     private LocalDate randomDate(Random random, LocalDate base) {

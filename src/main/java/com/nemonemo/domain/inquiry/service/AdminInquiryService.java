@@ -53,4 +53,12 @@ public class AdminInquiryService {
         inquiry.updateAdminMemo(request.getAdminMemo());
         return InquiryResponse.from(inquiry);
     }
+
+    // 문의 삭제
+    @Transactional
+    public void deleteInquiry(Long id) {
+        Inquiry inquiry = inquiryRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.INQUIRY_NOT_FOUND));
+        inquiryRepository.delete(inquiry);
+    }
 }

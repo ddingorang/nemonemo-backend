@@ -62,4 +62,12 @@ public class AdminInquiryController {
     ) {
         return ApiResponse.ok(adminInquiryService.updateMemo(id, request));
     }
+
+    // 문의 삭제
+    @Operation(summary = "문의 삭제")
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> deleteInquiry(@PathVariable Long id) {
+        adminInquiryService.deleteInquiry(id);
+        return ApiResponse.ok(null);
+    }
 }
