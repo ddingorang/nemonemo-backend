@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -96,20 +97,20 @@ public class DataInitializer implements ApplicationRunner {
 
         List<Unit> units = new ArrayList<>();
 
-        // XS 50개 (35 OCCUPIED / 15 AVAILABLE) — A존
-        addUnits(units, warehouse, "XS", UnitSize.XS, "A", new BigDecimal("30000"), 50, 35);
+        // XS 50개 (45 OCCUPIED / 5 AVAILABLE) — A존
+        addUnits(units, warehouse, "XS", UnitSize.XS, "A", new BigDecimal("30000"), 50, 45);
 
-        // S 60개 (42 OCCUPIED / 18 AVAILABLE) — B존
-        addUnits(units, warehouse, "S",  UnitSize.S,  "B", new BigDecimal("50000"), 60, 42);
+        // S 60개 (54 OCCUPIED / 6 AVAILABLE) — B존
+        addUnits(units, warehouse, "S",  UnitSize.S,  "B", new BigDecimal("50000"), 60, 54);
 
-        // M 26개 (18 OCCUPIED / 8 AVAILABLE) — C존
-        addUnits(units, warehouse, "M",  UnitSize.M,  "C", new BigDecimal("90000"), 26, 18);
+        // M 26개 (23 OCCUPIED / 3 AVAILABLE) — C존
+        addUnits(units, warehouse, "M",  UnitSize.M,  "C", new BigDecimal("90000"), 26, 23);
 
-        // L 11개 (8 OCCUPIED / 3 AVAILABLE) — D존
-        addUnits(units, warehouse, "L",  UnitSize.L,  "D", new BigDecimal("160000"), 11, 8);
+        // L 11개 (10 OCCUPIED / 1 AVAILABLE) — D존
+        addUnits(units, warehouse, "L",  UnitSize.L,  "D", new BigDecimal("160000"), 11, 10);
 
-        // XL 4개 (3 OCCUPIED / 1 AVAILABLE) — E존
-        addUnits(units, warehouse, "XL", UnitSize.XL, "E", new BigDecimal("250000"), 4, 3);
+        // XL 4개 (4 OCCUPIED / 0 AVAILABLE) — E존
+        addUnits(units, warehouse, "XL", UnitSize.XL, "E", new BigDecimal("250000"), 4, 4);
 
         List<Unit> saved = unitRepository.saveAll(units);
 
@@ -135,10 +136,13 @@ public class DataInitializer implements ApplicationRunner {
 
         int nameIdx = 0;
         for (Unit unit : interleaved) {
-            // 현재 활성 계약: 1~6개월 전 시작, 6~18개월 기간
-            int activeStartMonthsAgo = 1 + random.nextInt(6);
+            // 60%: 1개월 또는 3개월, 40%: 6~12개월
+            int activeDuration = random.nextInt(10) < 6
+                    ? (random.nextBoolean() ? 1 : 3)
+                    : 6 + random.nextInt(7);
+            // 시작일을 기간 내로 한정 → 종료일이 반드시 미래
+            int activeStartMonthsAgo = random.nextInt(activeDuration);
             LocalDate activeStart = randomDate(random, TODAY.minusMonths(activeStartMonthsAgo));
-            int activeDuration = 6 + random.nextInt(13);
             LocalDate activeEnd = activeStart.plusMonths(activeDuration).minusDays(1);
 
             boolean alreadyExpired = activeEnd.isBefore(TODAY);
@@ -150,7 +154,9 @@ public class DataInitializer implements ApplicationRunner {
             int pastCount = random.nextInt(3);
             LocalDate chainEnd = activeStart.minusDays(1 + random.nextInt(30));
             for (int p = 0; p < pastCount; p++) {
-                int duration = 3 + random.nextInt(12);
+                int duration = random.nextInt(10) < 6
+                        ? (random.nextBoolean() ? 1 : 3)
+                        : 6 + random.nextInt(7);
                 LocalDate pastStart = chainEnd.minusMonths(duration).plusDays(1);
                 if (pastStart.isBefore(TODAY.minusMonths(36))) break;
 
@@ -223,7 +229,13 @@ public class DataInitializer implements ApplicationRunner {
         long months = Math.max(1, java.time.temporal.ChronoUnit.MONTHS.between(startDate, endDate));
         BigDecimal total = unit.getMonthlyPrice().multiply(BigDecimal.valueOf(months));
 
-        return Contract.builder()
+        // 계약 등록일: 시작일과 동일(60%) 또는 1~3일 전(40%), 시간 랜덤
+        int daysBefore = random.nextInt(10) < 6 ? 0 : 1 + random.nextInt(3);
+        LocalDate contractDate = startDate.minusDays(daysBefore);
+        LocalDateTime contractedAt = contractDate.atTime(
+                8 + random.nextInt(11), random.nextInt(60), random.nextInt(60));
+
+        Contract contract = Contract.builder()
                 .unit(unit)
                 .customerName(name)
                 .customerPhone(phone)
@@ -233,6 +245,8 @@ public class DataInitializer implements ApplicationRunner {
                 .totalPrice(total)
                 .status(status)
                 .build();
+        contract.initCreatedAt(contractedAt);
+        return contract;
     }
 
     /** 유닛을 count개 생성하고, occupiedCount개를 랜덤하게 분산하여 OCCUPIED로, 나머지를 AVAILABLE로 설정 */

@@ -40,8 +40,10 @@ public class AdminContractService {
     public Page<ContractResponse> getContracts(ContractStatus status, Long unitId, String yearMonth, Pageable pageable) {
         if (yearMonth != null) {
             YearMonth ym = YearMonth.parse(yearMonth);
-            return contractRepository.findAllByMonth(status, ym.atDay(1), ym.atEndOfMonth(), pageable)
-                    .map(ContractResponse::from);
+            return contractRepository.findAllByMonth(status,
+                    ym.atDay(1).atStartOfDay(),
+                    ym.plusMonths(1).atDay(1).atStartOfDay(),
+                    pageable).map(ContractResponse::from);
         }
         return contractRepository.findAllByFilter(status, unitId, pageable)
                 .map(ContractResponse::from);
