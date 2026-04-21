@@ -36,7 +36,7 @@ public class DashboardService {
 
         LocalDate today = LocalDate.now();
         List<ContractResponse> expiringThisMonth = contractRepository
-                .findAllExpiringSoon(today, today.plusDays(14))
+                .findAllExpiringSoon(today, today.plusDays(7))
                 .stream().map(ContractResponse::from).toList();
 
         long pendingInquiryCount = inquiryRepository.countByStatus(InquiryStatus.PENDING);

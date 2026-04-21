@@ -57,7 +57,7 @@ public class UnitService {
     // 14일 내 계약 만료 유닛 ID 목록 조회
     private Set<Long> getExpiringSoonUnitIds() {
         LocalDate today = LocalDate.now();
-        return contractRepository.findUnitIdsExpiringSoon(today, today.plusDays(14))
+        return contractRepository.findUnitIdsExpiringSoon(today, today.plusDays(7))
                 .stream().collect(Collectors.toSet());
     }
 }
