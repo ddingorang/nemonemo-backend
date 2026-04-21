@@ -30,4 +30,6 @@ public class ContractUpdateRequest {
 
     @NotNull
     private BigDecimal totalPrice;
+
+    private String memo;
 }

@@ -77,6 +77,7 @@ public class AdminContractService {
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .totalPrice(request.getTotalPrice())
+                .memo(request.getMemo())
                 .build();
 
         contractRepository.save(contract);
@@ -108,7 +109,7 @@ public class AdminContractService {
         }
 
         contract.update(newUnit, request.getCustomerName(), request.getCustomerPhone(), request.getCustomerAddress(),
-                request.getStartDate(), request.getEndDate(), request.getTotalPrice());
+                request.getStartDate(), request.getEndDate(), request.getTotalPrice(), request.getMemo());
 
         return ContractResponse.from(contract);
     }

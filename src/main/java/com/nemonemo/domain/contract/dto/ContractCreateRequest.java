@@ -32,4 +32,6 @@ public class ContractCreateRequest {
 
     @NotNull
     private BigDecimal totalPrice;
+
+    private String memo;
 }

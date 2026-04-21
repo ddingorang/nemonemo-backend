@@ -24,6 +24,7 @@ public class ContractResponse {
     private LocalDate startDate;
     private LocalDate endDate;
     private BigDecimal totalPrice;
+    private String memo;
     private ContractStatus status;
     private boolean expiringSoon;
     private LocalDateTime createdAt;
@@ -45,6 +46,7 @@ public class ContractResponse {
                 .startDate(contract.getStartDate())
                 .endDate(contract.getEndDate())
                 .totalPrice(contract.getTotalPrice())
+                .memo(contract.getMemo())
                 .status(contract.getStatus())
                 .expiringSoon(expiringSoon)
                 .createdAt(contract.getCreatedAt())
