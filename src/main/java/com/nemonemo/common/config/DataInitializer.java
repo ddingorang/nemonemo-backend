@@ -97,20 +97,20 @@ public class DataInitializer implements ApplicationRunner {
 
         List<Unit> units = new ArrayList<>();
 
-        // XS 50개 (45 OCCUPIED / 5 AVAILABLE) — A존
-        addUnits(units, warehouse, "XS", UnitSize.XS, "A", new BigDecimal("30000"), 50, 45);
+        // XS 50개 (40 OCCUPIED / 10 AVAILABLE) — A존
+        addUnits(units, warehouse, "XS", UnitSize.XS, "A", new BigDecimal("30000"), 50, 40);
 
-        // S 60개 (54 OCCUPIED / 6 AVAILABLE) — B존
-        addUnits(units, warehouse, "S",  UnitSize.S,  "B", new BigDecimal("50000"), 60, 54);
+        // S 60개 (48 OCCUPIED / 12 AVAILABLE) — B존
+        addUnits(units, warehouse, "S",  UnitSize.S,  "B", new BigDecimal("50000"), 60, 48);
 
-        // M 26개 (23 OCCUPIED / 3 AVAILABLE) — C존
-        addUnits(units, warehouse, "M",  UnitSize.M,  "C", new BigDecimal("90000"), 26, 23);
+        // M 26개 (21 OCCUPIED / 5 AVAILABLE) — C존
+        addUnits(units, warehouse, "M",  UnitSize.M,  "C", new BigDecimal("90000"), 26, 21);
 
-        // L 11개 (10 OCCUPIED / 1 AVAILABLE) — D존
-        addUnits(units, warehouse, "L",  UnitSize.L,  "D", new BigDecimal("160000"), 11, 10);
+        // L 11개 (9 OCCUPIED / 2 AVAILABLE) — D존
+        addUnits(units, warehouse, "L",  UnitSize.L,  "D", new BigDecimal("160000"), 11, 9);
 
-        // XL 4개 (4 OCCUPIED / 0 AVAILABLE) — E존
-        addUnits(units, warehouse, "XL", UnitSize.XL, "E", new BigDecimal("250000"), 4, 4);
+        // XL 4개 (3 OCCUPIED / 1 AVAILABLE) — E존
+        addUnits(units, warehouse, "XL", UnitSize.XL, "E", new BigDecimal("250000"), 4, 3);
 
         List<Unit> saved = unitRepository.saveAll(units);
 
@@ -136,13 +136,19 @@ public class DataInitializer implements ApplicationRunner {
 
         int nameIdx = 0;
         for (Unit unit : interleaved) {
-            // 60%: 1개월 또는 3개월, 40%: 6~12개월
-            int activeDuration = random.nextInt(10) < 6
-                    ? (random.nextBoolean() ? 1 : 3)
-                    : 6 + random.nextInt(7);
-            // 시작일을 기간 내로 한정 → 종료일이 반드시 미래
-            int activeStartMonthsAgo = random.nextInt(activeDuration);
+            // 시작 시점: 1~5개월 전 분산 (이번 달 비중 최소화)
+            // 10%: 0개월, 30%: 1개월, 20%: 2개월, 20%: 3개월, 10%: 4개월, 10%: 5개월
+            int startRoll = random.nextInt(10);
+            int activeStartMonthsAgo = startRoll == 0 ? 0
+                    : startRoll <= 3 ? 1
+                    : startRoll <= 5 ? 2
+                    : startRoll <= 7 ? 3
+                    : startRoll == 8 ? 4 : 5;
             LocalDate activeStart = randomDate(random, TODAY.minusMonths(activeStartMonthsAgo));
+            // 기간: 경과 개월 + 추가 기간 → 종료일이 반드시 미래
+            // 60%: 1~2개월 추가, 40%: 3~8개월 추가
+            int extra = random.nextInt(10) < 6 ? 1 + random.nextInt(2) : 3 + random.nextInt(6);
+            int activeDuration = Math.max(1, activeStartMonthsAgo + extra);
             LocalDate activeEnd = activeStart.plusMonths(activeDuration).minusDays(1);
 
             boolean alreadyExpired = activeEnd.isBefore(TODAY);
