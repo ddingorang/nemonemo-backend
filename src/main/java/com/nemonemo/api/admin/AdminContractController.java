@@ -27,15 +27,16 @@ public class AdminContractController {
 
     private final AdminContractService adminContractService;
 
-    // 상태/유닛 ID 필터로 계약 목록 페이지네이션 조회
+    // 상태/유닛 ID/월 필터로 계약 목록 페이지네이션 조회
     @Operation(summary = "계약 목록 조회")
     @GetMapping
     public ApiResponse<Page<ContractResponse>> getContracts(
             @RequestParam(required = false) ContractStatus status,
             @RequestParam(required = false) Long unitId,
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+            @RequestParam(required = false) String yearMonth,
+            @PageableDefault(size = 20, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return ApiResponse.ok(adminContractService.getContracts(status, unitId, pageable));
+        return ApiResponse.ok(adminContractService.getContracts(status, unitId, yearMonth, pageable));
     }
 
     // 특정 계약 상세 조회

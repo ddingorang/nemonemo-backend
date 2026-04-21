@@ -20,6 +20,9 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
     @Query("SELECT c FROM Contract c WHERE (:status IS NULL OR c.status = :status) AND (:unitId IS NULL OR c.unit.id = :unitId)")
     Page<Contract> findAllByFilter(@Param("status") ContractStatus status, @Param("unitId") Long unitId, Pageable pageable);
 
+    @Query("SELECT c FROM Contract c WHERE (:status IS NULL OR c.status = :status) AND c.startDate BETWEEN :from AND :to")
+    Page<Contract> findAllByMonth(@Param("status") ContractStatus status, @Param("from") LocalDate from, @Param("to") LocalDate to, Pageable pageable);
+
     @Query("SELECT c FROM Contract c WHERE c.status = 'ACTIVE' AND c.endDate < :today")
     List<Contract> findAllExpired(@Param("today") LocalDate today);
 

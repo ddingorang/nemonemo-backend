@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 @Slf4j
@@ -35,8 +36,13 @@ public class AdminContractService {
     private final UnitRepository unitRepository;
     private final InquiryRepository inquiryRepository;
 
-    // 상태/유닛 ID 필터로 계약 목록 페이지네이션 조회
-    public Page<ContractResponse> getContracts(ContractStatus status, Long unitId, Pageable pageable) {
+    // 상태/유닛 ID/월 필터로 계약 목록 페이지네이션 조회
+    public Page<ContractResponse> getContracts(ContractStatus status, Long unitId, String yearMonth, Pageable pageable) {
+        if (yearMonth != null) {
+            YearMonth ym = YearMonth.parse(yearMonth);
+            return contractRepository.findAllByMonth(status, ym.atDay(1), ym.atEndOfMonth(), pageable)
+                    .map(ContractResponse::from);
+        }
         return contractRepository.findAllByFilter(status, unitId, pageable)
                 .map(ContractResponse::from);
     }
