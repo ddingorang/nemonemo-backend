@@ -25,6 +25,9 @@ public enum ErrorCode {
     CONTRACT_ALREADY_ACTIVE("해당 유닛에 이미 활성 계약이 존재합니다.", HttpStatus.CONFLICT),
     CONTRACT_NOT_ACTIVE("활성 상태의 계약이 아닙니다.", HttpStatus.CONFLICT),
 
+    // Memo
+    MEMO_NOT_FOUND("메모를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+
     // Admin / Auth
     INVALID_CREDENTIALS("아이디 또는 비밀번호가 올바르지 않습니다.", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED("인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
