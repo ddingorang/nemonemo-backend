@@ -22,6 +22,6 @@ public class DashboardResponse {
         private long available;
         private long occupied;
         private long reserved;
-        private long maintenance;
+        private long disabled;
     }
 }

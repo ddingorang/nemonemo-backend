@@ -31,7 +31,7 @@ public class DashboardService {
                 .available(unitRepository.countByIsActiveTrueAndStatus(UnitStatus.AVAILABLE))
                 .occupied(unitRepository.countByIsActiveTrueAndStatus(UnitStatus.OCCUPIED))
                 .reserved(unitRepository.countByIsActiveTrueAndStatus(UnitStatus.RESERVED))
-                .maintenance(unitRepository.countByIsActiveTrueAndStatus(UnitStatus.DISABLED))
+                .disabled(unitRepository.countByIsActiveTrueAndStatus(UnitStatus.DISABLED))
                 .build();
 
         LocalDate today = LocalDate.now();
