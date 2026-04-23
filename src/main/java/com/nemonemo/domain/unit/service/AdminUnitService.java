@@ -37,18 +37,7 @@ public class AdminUnitService {
         Map<Long, Contract> activeContracts = contractRepository.findAllActive()
                 .stream().collect(Collectors.toMap(c -> c.getUnit().getId(), c -> c));
 
-        List<Unit> units;
-        if (size != null && status != null) {
-            units = unitRepository.findAllByIsActiveTrueAndSizeAndStatus(size, status);
-        } else if (size != null) {
-            units = unitRepository.findAllByIsActiveTrueAndSize(size);
-        } else if (status != null) {
-            units = unitRepository.findAllByIsActiveTrueAndStatus(status);
-        } else {
-            units = unitRepository.findAllByIsActiveTrue();
-        }
-
-        return units.stream()
+        return unitRepository.findAllByFilter(size, status).stream()
                 .map(u -> UnitResponse.from(u, false, activeContracts.get(u.getId())))
                 .toList();
     }
@@ -91,12 +80,13 @@ public class AdminUnitService {
         return UnitResponse.from(unit);
     }
 
-    // 유닛 연관 계약 전체 삭제 및 상태 초기화
-    @Transactional
-    public void deleteUnitContracts(Long id) {
-        Unit unit = unitRepository.findByIdAndIsActiveTrue(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.UNIT_NOT_FOUND));
-        contractRepository.deleteAllByUnitId(unit.getId());
-        unit.changeStatus(UnitStatus.AVAILABLE);
+    // 대시보드용: 활성 유닛 총 수
+    public long countActive() {
+        return unitRepository.countByIsActiveTrue();
+    }
+
+    // 대시보드용: 상태별 활성 유닛 수
+    public long countActiveByStatus(UnitStatus status) {
+        return unitRepository.countByIsActiveTrueAndStatus(status);
     }
 }

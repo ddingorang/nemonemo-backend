@@ -29,29 +29,22 @@ public class UnitService {
     // 만료 임박 표시 포함 사이즈/상태 필터로 유닛 목록 조회
     public List<UnitResponse> getUnits(UnitSize size, UnitStatus status) {
         Set<Long> expiringSoonUnitIds = getExpiringSoonUnitIds();
-
-        List<Unit> units;
-        if (size != null && status != null) {
-            units = unitRepository.findAllByIsActiveTrueAndSizeAndStatus(size, status);
-        } else if (size != null) {
-            units = unitRepository.findAllByIsActiveTrueAndSize(size);
-        } else if (status != null) {
-            units = unitRepository.findAllByIsActiveTrueAndStatus(status);
-        } else {
-            units = unitRepository.findAllByIsActiveTrue();
-        }
-
-        return units.stream()
+        return unitRepository.findAllByFilter(size, status).stream()
                 .map(u -> UnitResponse.from(u, expiringSoonUnitIds.contains(u.getId())))
                 .toList();
     }
 
     // 특정 유닛 상세 및 만료 임박 여부 조회
     public UnitResponse getUnit(Long id) {
-        Unit unit = unitRepository.findByIdAndIsActiveTrue(id)
-                .orElseThrow(() -> new BusinessException(ErrorCode.UNIT_NOT_FOUND));
+        Unit unit = getUnitEntity(id);
         Set<Long> expiringSoonUnitIds = getExpiringSoonUnitIds();
         return UnitResponse.from(unit, expiringSoonUnitIds.contains(unit.getId()));
+    }
+
+    // 서비스 간 내부 사용: 유닛 엔티티 직접 반환
+    public Unit getUnitEntity(Long id) {
+        return unitRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.UNIT_NOT_FOUND));
     }
 
     // 14일 내 계약 만료 유닛 ID 목록 조회

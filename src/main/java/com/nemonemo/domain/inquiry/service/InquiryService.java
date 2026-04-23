@@ -9,7 +9,7 @@ import com.nemonemo.domain.inquiry.entity.Inquiry;
 import com.nemonemo.domain.inquiry.entity.InquiryStatus;
 import com.nemonemo.domain.inquiry.repository.InquiryRepository;
 import com.nemonemo.domain.unit.entity.Unit;
-import com.nemonemo.domain.unit.repository.UnitRepository;
+import com.nemonemo.domain.unit.service.UnitService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,12 +21,11 @@ import java.util.List;
 public class InquiryService {
 
     private final InquiryRepository inquiryRepository;
-    private final UnitRepository unitRepository;
+    private final UnitService unitService;
 
     // 중복 문의 방지 후 예약 문의 저장
     @Transactional
     public InquiryResponse submitInquiry(InquiryRequest request) {
-        // 동일 연락처 중복 문의 방지
         boolean hasPending = inquiryRepository.existsByCustomerPhoneAndStatusIn(
                 request.getCustomerPhone(),
                 List.of(InquiryStatus.PENDING, InquiryStatus.IN_PROGRESS)
@@ -37,11 +36,9 @@ public class InquiryService {
 
         Unit unit = null;
         if (request.getUnitId() != null) {
-            unit = unitRepository.findByIdAndIsActiveTrue(request.getUnitId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.UNIT_NOT_FOUND));
+            unit = unitService.getUnitEntity(request.getUnitId());
         }
 
-        // unitId, desiredSize 둘 다 없으면 에러
         if (unit == null && request.getDesiredSize() == null) {
             throw new BusinessException(ErrorCode.INVALID_INPUT);
         }

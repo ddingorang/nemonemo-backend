@@ -10,7 +10,7 @@ import com.nemonemo.domain.contract.entity.Contract;
 import com.nemonemo.domain.contract.entity.ContractStatus;
 import com.nemonemo.domain.contract.repository.ContractRepository;
 import com.nemonemo.domain.inquiry.entity.Inquiry;
-import com.nemonemo.domain.inquiry.repository.InquiryRepository;
+import com.nemonemo.domain.inquiry.service.AdminInquiryService;
 import com.nemonemo.domain.unit.entity.Unit;
 import com.nemonemo.domain.unit.entity.UnitStatus;
 import com.nemonemo.domain.unit.repository.UnitRepository;
@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +33,7 @@ public class AdminContractService {
 
     private final ContractRepository contractRepository;
     private final UnitRepository unitRepository;
-    private final InquiryRepository inquiryRepository;
+    private final AdminInquiryService adminInquiryService;
 
     // 상태/유닛 ID/월 필터로 계약 목록 페이지네이션 조회
     public Page<ContractResponse> getContracts(ContractStatus status, Long unitId, String yearMonth, Pageable pageable) {
@@ -72,8 +71,7 @@ public class AdminContractService {
 
         Inquiry inquiry = null;
         if (request.getInquiryId() != null) {
-            inquiry = inquiryRepository.findById(request.getInquiryId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.INQUIRY_NOT_FOUND));
+            inquiry = adminInquiryService.getInquiryEntity(request.getInquiryId());
         }
 
         Contract contract = Contract.builder()
@@ -138,8 +136,7 @@ public class AdminContractService {
         return ContractResponse.from(contract);
     }
 
-    // 매일 새벽 1시 만료된 계약 일괄 처리 (스케줄러)
-    @Scheduled(cron = "0 0 1 * * *")
+    // 만료된 계약 일괄 처리 — ContractScheduler에서 @Scheduled로 호출
     @Transactional
     public void processExpiredContracts() {
         List<Contract> expired = contractRepository.findAllExpired(LocalDate.now());
@@ -150,5 +147,21 @@ public class AdminContractService {
         if (!expired.isEmpty()) {
             log.info("만료 계약 처리 완료: {}건", expired.size());
         }
+    }
+
+    // 유닛에 연관된 계약 전체 삭제 후 유닛 상태 초기화 (AdminUnitController에서 호출)
+    @Transactional
+    public void deleteContractsByUnit(Long unitId) {
+        Unit unit = unitRepository.findByIdAndIsActiveTrue(unitId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.UNIT_NOT_FOUND));
+        contractRepository.deleteAllByUnitId(unit.getId());
+        unit.changeStatus(UnitStatus.AVAILABLE);
+    }
+
+    // 대시보드용: 만료 임박 계약 목록 조회
+    public List<ContractResponse> getExpiringSoon(LocalDate from, LocalDate to) {
+        return contractRepository.findAllExpiringSoon(from, to).stream()
+                .map(ContractResponse::from)
+                .toList();
     }
 }

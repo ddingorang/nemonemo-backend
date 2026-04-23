@@ -61,4 +61,15 @@ public class AdminInquiryService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.INQUIRY_NOT_FOUND));
         inquiryRepository.delete(inquiry);
     }
+
+    // 서비스 간 내부 사용: 문의 엔티티 직접 반환
+    public Inquiry getInquiryEntity(Long id) {
+        return inquiryRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.INQUIRY_NOT_FOUND));
+    }
+
+    // 대시보드용: 상태별 문의 수
+    public long countByStatus(InquiryStatus status) {
+        return inquiryRepository.countByStatus(status);
+    }
 }

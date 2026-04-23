@@ -8,6 +8,7 @@ import com.nemonemo.domain.unit.dto.UnitStatusUpdateRequest;
 import com.nemonemo.domain.unit.dto.UnitUpdateRequest;
 import com.nemonemo.domain.unit.entity.UnitSize;
 import com.nemonemo.domain.unit.entity.UnitStatus;
+import com.nemonemo.domain.contract.service.AdminContractService;
 import com.nemonemo.domain.unit.service.AdminUnitService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -27,6 +28,7 @@ import java.util.List;
 public class AdminUnitController {
 
     private final AdminUnitService adminUnitService;
+    private final AdminContractService adminContractService;
 
     // 사이즈/상태 필터로 유닛 목록 조회
     @Operation(summary = "유닛 목록 조회")
@@ -71,6 +73,6 @@ public class AdminUnitController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUnitContracts(@PathVariable Long id) {
-        adminUnitService.deleteUnitContracts(id);
+        adminContractService.deleteContractsByUnit(id);
     }
 }
