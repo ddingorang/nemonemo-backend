@@ -9,6 +9,8 @@ import com.nemonemo.domain.contract.repository.ContractRepository;
 import com.nemonemo.domain.inquiry.entity.Inquiry;
 import com.nemonemo.domain.inquiry.entity.InquiryStatus;
 import com.nemonemo.domain.inquiry.repository.InquiryRepository;
+import com.nemonemo.domain.memo.entity.Memo;
+import com.nemonemo.domain.memo.repository.MemoRepository;
 import com.nemonemo.domain.unit.entity.Unit;
 import com.nemonemo.domain.unit.entity.UnitSize;
 import com.nemonemo.domain.unit.entity.UnitStatus;
@@ -41,6 +43,7 @@ public class DataInitializer implements ApplicationRunner {
     private final AdminRepository adminRepository;
     private final ContractRepository contractRepository;
     private final InquiryRepository inquiryRepository;
+    private final MemoRepository memoRepository;
     private final PasswordEncoder passwordEncoder;
 
     private static final LocalDate TODAY = LocalDate.now();
@@ -116,6 +119,17 @@ public class DataInitializer implements ApplicationRunner {
 
         List<Unit> saved = unitRepository.saveAll(units);
 
+        // AVAILABLE 유닛 중 각 사이즈에서 1개씩 RESERVED로 전환 (총 5개)
+        List<Unit> toReserve = new ArrayList<>();
+        for (UnitSize sz : new UnitSize[]{UnitSize.XS, UnitSize.S, UnitSize.M, UnitSize.L, UnitSize.XL}) {
+            saved.stream()
+                    .filter(u -> u.getStatus() == UnitStatus.AVAILABLE && u.getSize() == sz)
+                    .findFirst()
+                    .ifPresent(toReserve::add);
+        }
+        toReserve.forEach(u -> u.changeStatus(UnitStatus.RESERVED));
+        unitRepository.saveAll(toReserve);
+
         // 사이즈별로 OCCUPIED 유닛을 분리한 뒤 round-robin 인터리빙
         // → 계약 목록에서 XS끼리·S끼리 뭉치지 않도록
         UnitSize[] sizeOrder = {UnitSize.XS, UnitSize.S, UnitSize.M, UnitSize.L, UnitSize.XL};
@@ -173,6 +187,8 @@ public class DataInitializer implements ApplicationRunner {
             }
         }
 
+        seedMemos();
+
         inquiryRepository.saveAll(List.of(
                 Inquiry.builder()
                         .desiredSize(UnitSize.S)
@@ -222,6 +238,56 @@ public class DataInitializer implements ApplicationRunner {
                         .status(InquiryStatus.COMPLETED)
                         .build()
         ));
+    }
+
+    private void seedMemos() {
+        if (memoRepository.count() > 0) return;
+
+        LocalDateTime now = LocalDateTime.now();
+
+        Memo m1 = Memo.builder()
+                .content("이번 주 만료 계약 사전 안내 전화 필요.\n- A-12 (김민준, " + TODAY.plusDays(3) + " 만료) → 연장 의향 확인\n- B-07 (이서연, " + TODAY.plusDays(5) + " 만료) → 미응답, 재연락\n- C-03 (박지호, " + TODAY.plusDays(6) + " 만료) → 연장 신청 완료")
+                .category("운영")
+                .pinned(true)
+                .build();
+        m1.initCreatedAt(now.minusHours(3));
+
+        Memo m2 = Memo.builder()
+                .content("최유나 고객 전화 상담 완료.\nXS 창고 1개월 단기 이용 희망. 5/1 입주 원함.\nA-03 공실 안내 → 긍정적 반응, 내일 중 입금 예정.\n예약 등록 처리함.")
+                .category("상담")
+                .pinned(false)
+                .build();
+        m2.initCreatedAt(now.minusDays(1).minusHours(2));
+
+        Memo m3 = Memo.builder()
+                .content("정승우 고객 재방문 상담.\n대형(L) 창고 12개월 장기 계약 희망. 가격 협의 요청.\n현재 D-04 공실 확인. 6개월 이상 계약 할인 정책 검토 후 회신 예정.")
+                .category("상담")
+                .pinned(false)
+                .build();
+        m3.initCreatedAt(now.minusDays(2).minusHours(5));
+
+        Memo m4 = Memo.builder()
+                .content("박지호 고객 - 중형(M) 창고 2개 동시 사용 요청.\n인접 유닛 배정이 어려워 대형(L) 단일 유닛으로 대체 안내.\n고객 수락, 계약 진행 예정.")
+                .category("상담")
+                .pinned(false)
+                .build();
+        m4.initCreatedAt(now.minusDays(3).minusHours(1));
+
+        Memo m5 = Memo.builder()
+                .content("장기 계약 할인 기준 정리 필요.\n6개월 이상: 5% 할인 / 12개월 이상: 10% 할인 제안 검토 중.\n→ 대표님 확인 후 정책 확정 예정.")
+                .category("내부")
+                .pinned(false)
+                .build();
+        m5.initCreatedAt(now.minusDays(4).minusHours(4));
+
+        Memo m6 = Memo.builder()
+                .content("이서연 고객 소형(S) 창고 문의.\n이삿짐 3개월 보관 희망. B-05 공실 안내 완료.\n계약서 이메일 발송 대기 중 → seoyeon@example.com 으로 전송 예정.")
+                .category("상담")
+                .pinned(false)
+                .build();
+        m6.initCreatedAt(now.minusDays(5).minusHours(3));
+
+        memoRepository.saveAll(List.of(m1, m2, m3, m4, m5, m6));
     }
 
     private LocalDate randomDate(Random random, LocalDate base) {
