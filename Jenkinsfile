@@ -1,4 +1,4 @@
-pipeline {
+ pipeline {
     agent any
 
     environment {
@@ -15,15 +15,25 @@ pipeline {
     stages {
 
         // ──────────────────────────────────────────────
+        // 0. Checkout
+        // ──────────────────────────────────────────────
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        // ──────────────────────────────────────────────
         // 1. Build & Test
         // ──────────────────────────────────────────────
         stage('Build & Test') {
             steps {
+                sh 'chmod +x gradlew'
                 sh './gradlew clean build --no-daemon'
             }
             post {
                 always {
-                    junit '**/build/test-results/test/*.xml'
+                    junit allowEmptyResults: true, testResults: '**/build/test-results/test/*.xml'
                 }
             }
         }
