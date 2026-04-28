@@ -45,11 +45,10 @@
             steps {
                 withCredentials([
                     string(credentialsId: 'ECR_REGISTRY', variable: 'ECR_REGISTRY'),
-                    usernamePassword(
+                    [$class: 'AmazonWebServicesCredentialsBinding',
                         credentialsId: 'AWS_CREDENTIALS',
-                        usernameVariable: 'AWS_ACCESS_KEY_ID',
-                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
-                    )
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']
                 ]) {
                     script {
                         def fullImage = "${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}"
@@ -78,13 +77,12 @@
         stage('Deploy') {
             steps {
                 withCredentials([
-                    string(credentialsId: 'ECR_REGISTRY',  variable: 'ECR_REGISTRY'),
-                    string(credentialsId: 'BACKEND_HOST',  variable: 'BACKEND_HOST'),
-                    usernamePassword(
+                    string(credentialsId: 'ECR_REGISTRY', variable: 'ECR_REGISTRY'),
+                    string(credentialsId: 'BACKEND_HOST', variable: 'BACKEND_HOST'),
+                    [$class: 'AmazonWebServicesCredentialsBinding',
                         credentialsId: 'AWS_CREDENTIALS',
-                        usernameVariable: 'AWS_ACCESS_KEY_ID',
-                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
-                    )
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']
                 ]) {
                     sshagent(['SSH_KEY']) {
                         sh """
