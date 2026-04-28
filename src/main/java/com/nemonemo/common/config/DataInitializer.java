@@ -80,8 +80,6 @@ public class DataInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        unitRepository.migrateMaintenance();
-
         if (adminRepository.count() == 0) {
             adminRepository.save(Admin.builder()
                     .username("admin")
