@@ -34,6 +34,7 @@
             post {
                 always {
                     junit allowEmptyResults: true, testResults: '**/build/test-results/test/*.xml'
+                    sh 'rm -rf build/libs/*.jar'
                 }
             }
         }
@@ -78,20 +79,14 @@
             steps {
                 withCredentials([
                     string(credentialsId: 'ECR_REGISTRY', variable: 'ECR_REGISTRY'),
-                    string(credentialsId: 'BACKEND_HOST', variable: 'BACKEND_HOST'),
-                    [$class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: 'AWS_CREDENTIALS',
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']
+                    string(credentialsId: 'BACKEND_HOST', variable: 'BACKEND_HOST')
                 ]) {
                     sshagent(['SSH_KEY']) {
                         sh """
                             ssh -o StrictHostKeyChecking=no ${BACKEND_USER}@${BACKEND_HOST} '
                                 set -e
 
-                                # ECR 로그인
-                                AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \\
-                                AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \\
+                                # ECR 로그인 (IAM Role 사용)
                                 aws ecr get-login-password --region ${AWS_REGION} | \\
                                     docker login --username AWS --password-stdin ${ECR_REGISTRY}
 
@@ -110,7 +105,7 @@
                                     --restart unless-stopped \\
                                     ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
 
-                                # 이전 이미지 정리 (최근 3개 보존)
+                                # 이전 이미지 정리
                                 docker image prune -f
                             '
                         """
