@@ -80,8 +80,12 @@
                 stage('Deploy') {
                     steps {
                         withCredentials([
-                            string(credentialsId: 'ECR_REGISTRY', variable: 'ECR_REGISTRY'),
-                            string(credentialsId: 'BACKEND_HOST', variable: 'BACKEND_HOST')
+                            string(credentialsId: 'ECR_REGISTRY',     variable: 'ECR_REGISTRY'),
+                            string(credentialsId: 'BACKEND_HOST',     variable: 'BACKEND_HOST'),
+                            string(credentialsId: 'PROD_DB_URL',      variable: 'DB_URL'),
+                            string(credentialsId: 'PROD_DB_USERNAME', variable: 'DB_USERNAME'),
+                            string(credentialsId: 'PROD_DB_PASSWORD', variable: 'DB_PASSWORD'),
+                            string(credentialsId: 'PROD_JWT_SECRET',  variable: 'JWT_SECRET')
                         ]) {
                             sshagent(['SSH_KEY']) {
                                 sh """
@@ -93,14 +97,17 @@
 
                                         docker pull ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
 
-                                        # 컨테이너 이름 변수 사용
                                         docker stop ${CONTAINER_NAME} 2>/dev/null || true
                                         docker rm   ${CONTAINER_NAME} 2>/dev/null || true
 
                                         docker run -d \\
                                             --name ${CONTAINER_NAME} \\
                                             -p 8080:8080 \\
-                                            --env-file /etc/nemonemo/prod.env \\
+                                            -e SPRING_PROFILES_ACTIVE=prod \\
+                                            -e DB_URL=${DB_URL} \\
+                                            -e DB_USERNAME=${DB_USERNAME} \\
+                                            -e DB_PASSWORD=${DB_PASSWORD} \\
+                                            -e JWT_SECRET=${JWT_SECRET} \\
                                             --restart unless-stopped \\
                                             ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
 
