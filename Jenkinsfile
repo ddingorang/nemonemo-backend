@@ -104,6 +104,7 @@
                                             --name ${CONTAINER_NAME} \\
                                             -p 8080:8080 \\
                                             -e SPRING_PROFILES_ACTIVE=prod \\
+                                            -e JAVA_TOOL_OPTIONS="-Djava.net.preferIPv4Stack=true" \\
                                             -e DB_URL=${DB_URL} \\
                                             -e DB_USERNAME=${DB_USERNAME} \\
                                             -e DB_PASSWORD=${DB_PASSWORD} \\
