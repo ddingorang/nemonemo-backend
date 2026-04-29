@@ -3,9 +3,10 @@
 
     environment {
         AWS_REGION   = 'ap-northeast-2'
-        ECR_REPO     = 'nemonemo-backend'
+        ECR_REPO     = 'nemonemo'
         IMAGE_TAG    = "${env.BUILD_NUMBER}"
         BACKEND_USER = 'ubuntu'
+        CONTAINER_NAME = 'nemonemo'
     }
 
     triggers {
@@ -75,44 +76,41 @@
         // ──────────────────────────────────────────────
         // 3. Deploy to Backend Server
         // ──────────────────────────────────────────────
-        stage('Deploy') {
-            steps {
-                withCredentials([
-                    string(credentialsId: 'ECR_REGISTRY', variable: 'ECR_REGISTRY'),
-                    string(credentialsId: 'BACKEND_HOST', variable: 'BACKEND_HOST')
-                ]) {
-                    sshagent(['SSH_KEY']) {
-                        sh """
-                            ssh -o StrictHostKeyChecking=no ${BACKEND_USER}@${BACKEND_HOST} '
-                                set -e
+        // 3. Deploy to Backend Server
+                stage('Deploy') {
+                    steps {
+                        withCredentials([
+                            string(credentialsId: 'ECR_REGISTRY', variable: 'ECR_REGISTRY'),
+                            string(credentialsId: 'BACKEND_HOST', variable: 'BACKEND_HOST')
+                        ]) {
+                            sshagent(['SSH_KEY']) {
+                                sh """
+                                    ssh -o StrictHostKeyChecking=no ${BACKEND_USER}@${BACKEND_HOST} '
+                                        set -e
 
-                                # ECR 로그인 (IAM Role 사용)
-                                aws ecr get-login-password --region ${AWS_REGION} | \\
-                                    docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                                        aws ecr get-login-password --region ${AWS_REGION} | \\
+                                            docker login --username AWS --password-stdin ${ECR_REGISTRY}
 
-                                # 새 이미지 Pull
-                                docker pull ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
+                                        docker pull ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
 
-                                # 기존 컨테이너 교체
-                                docker stop nemonemo-backend 2>/dev/null || true
-                                docker rm   nemonemo-backend 2>/dev/null || true
+                                        # 컨테이너 이름 변수 사용
+                                        docker stop ${CONTAINER_NAME} 2>/dev/null || true
+                                        docker rm   ${CONTAINER_NAME} 2>/dev/null || true
 
-                                # 배포
-                                docker run -d \\
-                                    --name nemonemo-backend \\
-                                    -p 8080:8080 \\
-                                    --env-file /etc/nemonemo/prod.env \\
-                                    --restart unless-stopped \\
-                                    ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
+                                        docker run -d \\
+                                            --name ${CONTAINER_NAME} \\
+                                            -p 8080:8080 \\
+                                            --env-file /etc/nemonemo/prod.env \\
+                                            --restart unless-stopped \\
+                                            ${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}
 
-                                # 이전 이미지 정리
-                                docker image prune -f
-                            '
-                        """
+                                        docker image prune -f
+                                    '
+                                """
+                            }
+                        }
                     }
                 }
-            }
-        }
     }
 
     post {
