@@ -5,7 +5,7 @@
         AWS_REGION   = 'ap-northeast-2'
         ECR_REPO     = 'nemonemo'
         IMAGE_TAG    = "${env.BUILD_NUMBER}"
-        BACKEND_USER = 'ubuntu'
+        BACKEND_USER = 'ec2-user'
         CONTAINER_NAME = 'nemonemo'
     }
 
