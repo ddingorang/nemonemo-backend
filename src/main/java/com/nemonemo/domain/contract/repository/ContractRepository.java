@@ -17,16 +17,18 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
 
     boolean existsByUnitIdAndStatus(Long unitId, ContractStatus status);
 
-    @Query("SELECT c FROM Contract c WHERE (:status IS NULL OR c.status = :status) AND (:unitId IS NULL OR c.unit.id = :unitId)")
+    @Query(value = "SELECT c FROM Contract c JOIN FETCH c.unit WHERE (:status IS NULL OR c.status = :status) AND (:unitId IS NULL OR c.unit.id = :unitId)",
+           countQuery = "SELECT COUNT(c) FROM Contract c WHERE (:status IS NULL OR c.status = :status) AND (:unitId IS NULL OR c.unit.id = :unitId)")
     Page<Contract> findAllByFilter(@Param("status") ContractStatus status, @Param("unitId") Long unitId, Pageable pageable);
 
-    @Query("SELECT c FROM Contract c WHERE (:status IS NULL OR c.status = :status) AND c.createdAt >= :from AND c.createdAt < :to")
+    @Query(value = "SELECT c FROM Contract c JOIN FETCH c.unit WHERE (:status IS NULL OR c.status = :status) AND c.createdAt >= :from AND c.createdAt < :to",
+           countQuery = "SELECT COUNT(c) FROM Contract c WHERE (:status IS NULL OR c.status = :status) AND c.createdAt >= :from AND c.createdAt < :to")
     Page<Contract> findAllByMonth(@Param("status") ContractStatus status, @Param("from") java.time.LocalDateTime from, @Param("to") java.time.LocalDateTime to, Pageable pageable);
 
-    @Query("SELECT c FROM Contract c WHERE c.status = 'ACTIVE' AND c.endDate < :today")
+    @Query("SELECT c FROM Contract c JOIN FETCH c.unit WHERE c.status = 'ACTIVE' AND c.endDate < :today")
     List<Contract> findAllExpired(@Param("today") LocalDate today);
 
-    @Query("SELECT c FROM Contract c WHERE c.status = 'ACTIVE' AND c.endDate BETWEEN :today AND :threshold ORDER BY c.endDate ASC")
+    @Query("SELECT c FROM Contract c JOIN FETCH c.unit WHERE c.status = 'ACTIVE' AND c.endDate BETWEEN :today AND :threshold ORDER BY c.endDate ASC")
     List<Contract> findAllExpiringSoon(@Param("today") LocalDate today, @Param("threshold") LocalDate threshold);
 
     @Query("SELECT c.unit.id FROM Contract c WHERE c.status = 'ACTIVE' AND c.endDate BETWEEN :today AND :in7days")
